@@ -1,47 +1,66 @@
 #!/bin/bash
 
-# === 基本配置 ===
-DATE=$(date +'%Y-%m-%d')
-BASE_BACKUP_DIR="/root/backup/backup"
-BACKUP_DIR="$BASE_BACKUP_DIR/$DATE"
-Vaultwarden_DATA_DIR="/root/Vaultwarden/data"
-XBOARD_DIR="/root/Xboard/.docker/.data"
-NGINX_CONF_DIR="/etc/nginx"
-MONGO_BACKUP_DIR="/root/backup/mongo_backup_$DATE"
+# ----------------------
+# 自动备份脚本（支持上传到 OneDrive）
+# 备份内容：Vaultwarden、XBoard、XPay、Nginx 配置、MongoDB
+# ----------------------
 
-FILENAME_VAULT="vaultwarden-backup-$DATE.tar.gz"
-FILENAME_XBOARD="xboard-backup-$DATE.tar.gz"
-FILENAME_NGINX="nginx-backup-$DATE.tar.gz"
-FILENAME_MONGO="mongodb-backup-$DATE.tar.gz"
+# === 一、日期与目录配置 ===
 
-RCLONE_REMOTE="myonedrive:backup"  # 配置的远程盘
+DATE=$(date +'%Y-%m-%d')                        # 当前日期（用于目录命名）
+BASE_BACKUP_DIR="/root/backup/backup"          # 本地基础备份目录
+BACKUP_DIR="$BASE_BACKUP_DIR/$DATE"            # 每日备份子目录
 
-# === MongoDB 认证配置 ===
-MONGO_HOST="IP"
-MONGO_PORT="27017"
-MONGO_USER="账号"
-MONGO_PASS="密码"
-MONGO_AUTH_DB="admin"
+# === 二、需要备份的路径 ===
 
-# === 创建本地备份目录 ===
+Vaultwarden_DATA_DIR="/root/Vaultwarden/data"         # Vaultwarden 数据目录
+XBOARD_DIR="/root/Xboard/.docker/.data"               # XBoard 持久化数据目录
+XPAY_DATA="/root/XPay/database.db"                    # XPay 数据库存储文件
+NGINX_CONF_DIR="/etc/nginx"                           # Nginx 配置目录
+
+# === 三、备份文件名设定 ===
+
+FILENAME_VAULT="vaultwarden-backup-$DATE.tar.gz"      # Vaultwarden 备份文件名
+FILENAME_XBOARD="xboard-backup-$DATE.tar.gz"          # XBoard 备份文件名
+FILENAME_NGINX="nginx-backup-$DATE.tar.gz"            # Nginx 配置备份文件名
+FILENAME_MONGO="mongodb-backup-$DATE.tar.gz"          # MongoDB 压缩文件名
+FILENAME_XPAY="xpay-backup-$DATE.tar.gz"              # XPay 数据库备份文件名
+
+# === 四、MongoDB 备份配置 ===
+
+MONGO_BACKUP_DIR="/root/backup/mongo_backup_$DATE"    # 临时 MongoDB 输出路径
+MONGO_HOST="82.21.190.8"                              # MongoDB 地址
+MONGO_PORT="27017"                                    # 端口
+MONGO_USER="xioaruan"                                 # 用户名
+MONGO_PASS="214253551"                                # 密码
+MONGO_AUTH_DB="admin"                                 # 认证库
+
+# === 五、远程上传配置 ===
+
+RCLONE_REMOTE="myonedrive:backup"                     # rclone 配置的 OneDrive 路径
+
+# === 六、创建每日备份目录 ===
+
 mkdir -p "$BACKUP_DIR"
 
-# === 1. 备份 Vaultwarden ===
+# === 七、开始备份 ===
+
+## 1. Vaultwarden 数据压缩
 echo "[*] 备份 Vaultwarden..."
 tar -czf "$BACKUP_DIR/$FILENAME_VAULT" -C "$Vaultwarden_DATA_DIR" .
 [ $? -ne 0 ] && echo "[!] Vaultwarden 失败" && exit 1
 
-# === 2. 备份 XBoard ===
+## 2. XBoard 数据压缩
 echo "[*] 备份 XBoard..."
 tar -czf "$BACKUP_DIR/$FILENAME_XBOARD" -C "$XBOARD_DIR" .
 [ $? -ne 0 ] && echo "[!] XBoard 失败" && exit 1
 
-# === 3. 备份 Nginx 配置 ===
+## 3. Nginx 配置文件打包（包括主配置文件和 cert 目录）
 echo "[*] 备份 Nginx..."
 tar -czf "$BACKUP_DIR/$FILENAME_NGINX" -C "$NGINX_CONF_DIR" nginx.conf cert/
 [ $? -ne 0 ] && echo "[!] Nginx 失败" && exit 1
 
-# === 4. 备份 MongoDB ===
+## 4. MongoDB 数据导出 + 压缩
 echo "[*] 备份 MongoDB..."
 rm -rf "$MONGO_BACKUP_DIR"
 mkdir -p "$MONGO_BACKUP_DIR"
@@ -56,16 +75,30 @@ tar -czf "$BACKUP_DIR/$FILENAME_MONGO" -C "$MONGO_BACKUP_DIR" .
 [ $? -ne 0 ] && echo "[!] MongoDB 压缩失败" && exit 1
 rm -rf "$MONGO_BACKUP_DIR"
 
-# === 5. 上传到 OneDrive ===
+## 5. XPay 数据库打包（压缩 sqlite 文件）
+echo "[*] 备份 XPay..."
+if [ -f "$XPAY_DATA" ]; then
+    tar -czf "$BACKUP_DIR/$FILENAME_XPAY" -C "$(dirname "$XPAY_DATA")" "$(basename "$XPAY_DATA")"
+    [ $? -ne 0 ] && echo "[!] XPay 压缩失败" && exit 1
+else
+    echo "[!] 找不到 XPay 数据文件：$XPAY_DATA"
+    exit 1
+fi
+
+# === 八、上传备份到 OneDrive ===
+
 echo "[*] 上传备份到 OneDrive..."
 rclone copy "$BACKUP_DIR" "$RCLONE_REMOTE/$DATE" --log-level INFO
 [ $? -ne 0 ] && echo "[!] 上传失败" && exit 1
 echo "[✓] 上传成功：$DATE 目录"
 
-# === 6. 清理本地 7 天前的备份文件夹 ===
+# === 九、本地清理：删除 7 天前的旧备份目录 ===
+
+echo "[*] 清理本地超过 7 天的旧备份..."
 find "$BASE_BACKUP_DIR" -mindepth 1 -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \;
 
-# === 7. 清理 OneDrive 上 4 天前的备份目录 ===
+# === 十、OneDrive 清理：删除 4 天前的旧目录 ===
+
 echo "[*] 清理 OneDrive 上 4 天前的备份..."
 FOUR_DAYS_AGO=$(date -d "-4 days" +%Y-%m-%d)
 OLD_DIRS=$(rclone lsf "$RCLONE_REMOTE/" --dirs-only)
@@ -78,5 +111,5 @@ for dir in $OLD_DIRS; do
     fi
 done
 
-# === 8. 完成 ===
+# === 十一、结束 ===
 echo "[✔] 所有备份任务完成：$DATE"
