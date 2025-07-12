@@ -10,17 +10,31 @@
  |__clash.yaml Xboard配合的Clash配置文件类型
 ```
 
-## fq.sh
+### fq.sh
 
 ```
 curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/web/fq.sh" && chmod +x fq.sh && ./fq.sh && rm fq.sh
 
 ```
 
-## backup.sh
+### backup.sh
 
 ```
 curl -sSL -o backup.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/web/backup.sh" && chmod +x backup.sh && ./backup.sh && rm backup.sh
 
+```
+
+# 其他脚本
+
+### [nodequality](https://nodequality.com/)
+
+```
+bash <(curl -sL https://run.NodeQuality.com)
+```
+
+### [NodeScriptKit](https://github.com/NodeSeekDev/NodeScriptKit)
+
+```
+bash <(curl -sL https://sh.nodeseek.com)
 ```
 
