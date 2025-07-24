@@ -46,20 +46,22 @@ bash <(curl -sL https://sh.nodeseek.com)
 
 # 🧪 VPS 测试记录
 
-| 服务器               | 测试时间        | 续费价格（CNY） | NQ检测链接                                                   |
-| -------------------- | --------------- | --------------- | ------------------------------------------------------------ |
-| Claw \| JP优化路线   | 2025/7/23 23:04 | 59/季           | [NQ](https://nodequality.com/r/pVhuqeZBn5qoBRAC8qZDPvIblXXoR1Yg) |
-| 亚洲云 \| 四川大带宽 | 2025/7/23 23:01 | 99/年           | [NQ](https://nodequality.com/r/YpOzhrkGYfLtjAUqApiABwkJfVgNlA75) |
-| 亚洲云 \| 香港CN2    | 2025/7/23 23:12 | 99/年           | [NQ](https://nodequality.com/r/MR1siE0AhfXmBWyuAQDJtKTfWfeJv0A9) |
-| GGY \| 广港专线NAT   | 2025/7/23 23:16 | 99/年           | [NQ](https://nodequality.com/r/dNBQzGExdryVuxbt0ETfCHYk5EFJaOF3) |
-| GGY \| 沪日专线NAT   | 2025/7/23 23:14 | 99/年           | [NQ](https://nodequality.com/r/4k5FbPAJMDMDAKeao794wUP5JJ6LnwTa) |
-| GGY \| 苏港专线NAT   | 2025/7/23 23:07 | 119/年          | [NQ](https://nodequality.com/r/13WGZ2D5WTA1aFKHg7qlRoJCf7Wikkh7) |
-| ZGOCLOUD \| USA      | 2025/7/23 23:12 | 72/年           | [NQ](https://nodequality.com/r/0ZxJh84cZe2nIcRfnPVkZ8zzei4EDeAW) |
-| BitsFlowCloud \| USA | 2025/7/23 23:11 | 68/年           | [NQ](https://nodequality.com/r/bAVKQbkpv5gv3ZArR0Xs14Asme7d0usE) |
-| NetJett \| USA       | 2025/7/23 23:10 | 163/年          | [NQ](https://nodequality.com/r/qcdoK83MsRddvlA72UvDB0sOAUN4TsFD) |
-| ACCKCloud \| JP      | 2025/7/23 23:09 | 14/月           | [NQ](https://nodequality.com/r/6XmYLBLCbh3egjGeyLDUHuhs0plntAWP) |
-| HaloCloud \| SG      | 2025/7/23 23:15 | 10/月           | [NQ](https://nodequality.com/r/GuMOKW4gbIXbtC0xbuHMWMEzfMzGztBV) |
-| Orange \| SG         | 2025/7/23 23:40 | 163/年          | [NQ](https://nodequality.com/r/NKYsApk9ckug5lrfbs68kgLpdqLZgOFM) |
+| 服务器                                    | 测试时间        | 续费价格（CNY） | NQ检测链接                                                   |
+| ----------------------------------------- | --------------- | --------------- | ------------------------------------------------------------ |
+| Claw \| JP优化路线                        | 2025/7/23 23:04 | 59/季           | [NQ](https://nodequality.com/r/pVhuqeZBn5qoBRAC8qZDPvIblXXoR1Yg) |
+| Claw \| HK优化线路（**清退**）            | 2025/7/24 10:04 | 59/季           | [NQ]( https://nodequality.com/r/tXw4EQ9uvZv4SAPRpXjAoPhetOJgn51c) |
+| 亚洲云 \| 四川大带宽                      | 2025/7/23 23:01 | 99/年           | [NQ](https://nodequality.com/r/YpOzhrkGYfLtjAUqApiABwkJfVgNlA75) |
+| 亚洲云 \| 香港CN2                         | 2025/7/23 23:12 | 99/年           | [NQ](https://nodequality.com/r/MR1siE0AhfXmBWyuAQDJtKTfWfeJv0A9) |
+| GGY \| 广港专线NAT                        | 2025/7/23 23:16 | 99/年           | [NQ](https://nodequality.com/r/dNBQzGExdryVuxbt0ETfCHYk5EFJaOF3) |
+| GGY \| 沪日专线NAT                        | 2025/7/23 23:14 | 99/年           | [NQ](https://nodequality.com/r/4k5FbPAJMDMDAKeao794wUP5JJ6LnwTa) |
+| GGY \| 苏港专线NAT                        | 2025/7/23 23:07 | 119/年          | [NQ](https://nodequality.com/r/13WGZ2D5WTA1aFKHg7qlRoJCf7Wikkh7) |
+| ZGOCLOUD \| USA                           | 2025/7/23 23:12 | 72/年           | [NQ](https://nodequality.com/r/0ZxJh84cZe2nIcRfnPVkZ8zzei4EDeAW) |
+| BitsFlowCloud \| USA                      | 2025/7/23 23:11 | 68/年           | [NQ](https://nodequality.com/r/bAVKQbkpv5gv3ZArR0Xs14Asme7d0usE) |
+| NetJett \| USA                            | 2025/7/23 23:10 | 163/年          | [NQ](https://nodequality.com/r/qcdoK83MsRddvlA72UvDB0sOAUN4TsFD) |
+| NetJett \| USA \| v6Only（Alice的v4出口） | 2025/7/24 12:01 | free/月         | [NQ](https://nodequality.com/r/Akdhw4AypALC5nBIlclXqhbNiyQBcjvm) |
+| ACCKCloud \| JP                           | 2025/7/23 23:09 | 14/月           | [NQ](https://nodequality.com/r/6XmYLBLCbh3egjGeyLDUHuhs0plntAWP) |
+| HaloCloud \| SG                           | 2025/7/23 23:15 | 10/月           | [NQ](https://nodequality.com/r/GuMOKW4gbIXbtC0xbuHMWMEzfMzGztBV) |
+| Orange \| SG                              | 2025/7/23 23:40 | 163/年          | [NQ](https://nodequality.com/r/NKYsApk9ckug5lrfbs68kgLpdqLZgOFM) |
 
 ## 🛠 未来计划
 
