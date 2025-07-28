@@ -57,11 +57,14 @@ bash <(curl -sL https://sh.nodeseek.com)
 | GGY                             | 苏港专线NAT            | 2025/7/23 23:07 | 119/年          | [NQ](https://nodequality.com/r/13WGZ2D5WTA1aFKHg7qlRoJCf7Wikkh7) |
 | ZGOCLOUD                        | USA                    | 2025/7/23 23:12 | 72/年           | [NQ](https://nodequality.com/r/0ZxJh84cZe2nIcRfnPVkZ8zzei4EDeAW) |
 | BitsFlowCloud                   | USA                    | 2025/7/23 23:11 | 68/年           | [NQ](https://nodequality.com/r/bAVKQbkpv5gv3ZArR0Xs14Asme7d0usE) |
-| NetJett                         | USA                    | 2025/7/23 23:10 | 163/年          | [NQ](https://nodequality.com/r/qcdoK83MsRddvlA72UvDB0sOAUN4TsFD) |
-| NetJett v6Only（Alice的v4出口） | USA                    | 2025/7/24 10:12 | free/年         | [NQ](https://nodequality.com/r/Akdhw4AypALC5nBIlclXqhbNiyQBcjvm) |
+| NetJett                         | DE                     | 2025/7/23 23:10 | 163/年          | [NQ](https://nodequality.com/r/qcdoK83MsRddvlA72UvDB0sOAUN4TsFD) |
+| NetJett v6Only（Alice的v4出口） | DE                     | 2025/7/24 10:12 | free/年         | [NQ](https://nodequality.com/r/Akdhw4AypALC5nBIlclXqhbNiyQBcjvm) |
+| NetJett v4 3C7G                 | DE                     | 2025/7/28 11:40 | free/月         | [NQ](https://nodequality.com/r/xBjCBVwt8eM0bzn3ywkdKIolmOOYIys3) |
 | ACCKCloud                       | JP                     | 2025/7/23 23:09 | 14/月           | [NQ](https://nodequality.com/r/6XmYLBLCbh3egjGeyLDUHuhs0plntAWP) |
 | HaloCloud                       | SG                     | 2025/7/23 23:15 | 10/月           | [NQ](https://nodequality.com/r/GuMOKW4gbIXbtC0xbuHMWMEzfMzGztBV) |
 | Orange                          | SG                     | 2025/7/23 23:40 | 163/年          | [NQ](https://nodequality.com/r/NKYsApk9ckug5lrfbs68kgLpdqLZgOFM) |
+| VKVM                            | JP China               | 2025/7/26 13:15 | 189/年          | [NQ](https://nodequality.com/r/o2nkAR2pAMjgRb99ok3VKxaoYmdJ4q5S) |
+| VKVM                            | HK China               | 2025/7/26 13:00 | 60/季           | [NQ](https://nodequality.com/r/CsdkNltlUALPGkkuJ18AXkcBtSYB5SZE) |
 
 ## 🛠 未来计划
 
