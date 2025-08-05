@@ -54,7 +54,7 @@ git clone --branch master --depth 1 https://gh-proxy.com/https://github.com/nelv
   && sudo bash install.sh
 ```
 
-
+### [迷之调参](https://omnitt.com/)
 
 # 🧪 VPS 测试记录
 
@@ -79,6 +79,10 @@ git clone --branch master --depth 1 https://gh-proxy.com/https://github.com/nelv
 | VKVM                            | JP China               | 2025/7/26 13:15 | 189/年          | [NQ](https://nodequality.com/r/o2nkAR2pAMjgRb99ok3VKxaoYmdJ4q5S) | 差劲                    |
 | VKVM                            | HK China               | 2025/7/26 13:00 | 60/季           | [NQ](https://nodequality.com/r/CsdkNltlUALPGkkuJ18AXkcBtSYB5SZE) | 差劲                    |
 | MHYIDC                          | HK->TW                 | 2025/7/30 13:00 | 9.9/月          | [NQ](https://nodequality.com/r/N6KhB6h40hpbI8ncT4TWQbcDA2UOBozt) |                         |
+| Back Waves                      | JP                     | 2025/7/31 20:00 | 19.9/月         | [NQ](https://nodequality.com/r/H2Mrojj3ZennAXeG8ALTeBKzDCRvRx83) |                         |
+| VMISS                           | KR                     | 2025/7/02 01:00 | 24.5/月         | [NQ](https://nodequality.com/r/1BYxQjc5qEB7oEA8ThElPv7wMRp5RurQ) |                         |
+| ISIF                            | HK                     | 2025/8/05 01:00 | 23/月           | [NQ](https://nodequality.com/r/XKxFYBq7fFEpY12KxYB5hiSDy8ZW1znP) |                         |
+| ISIF                            | JP                     | 2025/8/05 10:00 | 300/年          | [NQ]( https://nodequality.com/r/8jyl6t0qwRzOBNDKDo1BiBE6aopta34f) |                         |
 
 ## 🛠 未来计划
 
