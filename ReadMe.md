@@ -63,6 +63,7 @@ git clone --branch master --depth 1 https://gh-proxy.com/https://github.com/nelv
 | Claw                            | JP优化路线             | 2025/7/23 23:04 | 59/季           | [NQ](https://nodequality.com/r/pVhuqeZBn5qoBRAC8qZDPvIblXXoR1Yg) | 主用线路机 三网优化好用 |
 | Claw                            | HK优化线路（**清退**） | 2025/7/24 10:04 | 59/季           | [NQ]( https://nodequality.com/r/tXw4EQ9uvZv4SAPRpXjAoPhetOJgn51c) | 清退了                  |
 | 亚洲云                          | 四川大带宽             | 2025/7/23 23:01 | 99/年           | [NQ](https://nodequality.com/r/YpOzhrkGYfLtjAUqApiABwkJfVgNlA75) | 一般                    |
+| 亚洲云                          | 日本三网精品           | 2025/8/18 14:01 | 17.5/月         | [NQ]( https://nodequality.com/r/5ABzV20fZTB0AtJTsfUmIhT2zcBruAkp) | 感觉还不错？            |
 | 亚洲云                          | 香港CN2                | 2025/7/23 23:12 | 99/年           | [NQ](https://nodequality.com/r/MR1siE0AhfXmBWyuAQDJtKTfWfeJv0A9) | 一般                    |
 | GGY                             | 广港专线NAT            | 2025/7/23 23:16 | 99/年           | [NQ](https://nodequality.com/r/dNBQzGExdryVuxbt0ETfCHYk5EFJaOF3) | 目前挨打中              |
 | GGY                             | 沪日专线NAT            | 2025/7/23 23:14 | 99/年           | [NQ](https://nodequality.com/r/4k5FbPAJMDMDAKeao794wUP5JJ6LnwTa) | 目前挨打中              |
@@ -83,6 +84,7 @@ git clone --branch master --depth 1 https://gh-proxy.com/https://github.com/nelv
 | VMISS                           | KR                     | 2025/7/02 01:00 | 24.5/月         | [NQ](https://nodequality.com/r/1BYxQjc5qEB7oEA8ThElPv7wMRp5RurQ) |                         |
 | ISIF                            | HK                     | 2025/8/05 01:00 | 23/月           | [NQ](https://nodequality.com/r/XKxFYBq7fFEpY12KxYB5hiSDy8ZW1znP) |                         |
 | ISIF                            | JP                     | 2025/8/05 10:00 | 300/年          | [NQ]( https://nodequality.com/r/8jyl6t0qwRzOBNDKDo1BiBE6aopta34f) |                         |
+| YXVM                            | HK                     | 2025/8/06 01:00 | 21/月           | [NQ](https://nodequality.com/r/XJTLmmk3JrwgYvU8VNE7CAxIKGhYQj1Q) |                         |
 
 ## 🛠 未来计划
 
