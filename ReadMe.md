@@ -18,18 +18,24 @@ bash复制编辑Xcript/
 > 自动安装基础依赖、配置 DNS、Clash 等一站式操作
 
 ```
-curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/web/fq.sh" && chmod +x fq.sh && ./fq.sh && rm fq.sh
+curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh" && chmod +x fq.sh && ./fq.sh && rm fq.sh
 
 ```
 
+### 📦 Docker 安装脚本(docker.sh)
 
+> Docker安装脚本
+
+```
+curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh" && chmod +x docker.sh && ./docker.sh && rm docker.sh
+```
 
 ### 💾 一键备份脚本（backup.sh）
 
 > 支持 Vaultwarden、Xboard、MongoDB、Nginx 配置等的定时备份（含 Rclone 云同步）
 
 ```
-curl -sSL -o backup.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/web/backup.sh" && chmod +x backup.sh && ./backup.sh && rm backup.sh
+curl -sSL -o backup.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh" && chmod +x backup.sh && ./backup.sh && rm backup.sh
 ```
 
 # 🔧 第三方推荐工具
