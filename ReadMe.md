@@ -86,7 +86,7 @@ git clone --branch master --depth 1 https://gh-proxy.com/https://github.com/nelv
 | ✅        | ❌        | NetJett 4C6G   | USA          | 2025/7/23 23:10 | 163/年          | [NQ](https://nodequality.com/r/qcdoK83MsRddvlA72UvDB0sOAUN4TsFD) |                         |
 | ❌        |          | NetJett v6Only | USA          | 2025/7/24 10:12 | free/年         | [NQ](https://nodequality.com/r/Akdhw4AypALC5nBIlclXqhbNiyQBcjvm) |                         |
 | ❌        |          | NetJett  3C7G  | USA          | 2025/7/28 11:40 | free/月         | [NQ](https://nodequality.com/r/xBjCBVwt8eM0bzn3ywkdKIolmOOYIys3) |                         |
-| ✅        | ✅        | NetJett 8C8G   | USA          |                 | 100/年          |                                                              |                         |
+| ✅        | ✅        | NetJett 8C8G   | USA          | 2025/8/21 23:09 | 100/年          | [NQ](https://nodequality.com/r/lurAsz7271iEsVU0vsAl13cQ1zpra71w) |                         |
 | ❌        |          | ACCKCloud      | JP           | 2025/7/23 23:09 | 14/月           | [NQ](https://nodequality.com/r/6XmYLBLCbh3egjGeyLDUHuhs0plntAWP) | 一般                    |
 | ❌        |          | HaloCloud      | SG           | 2025/7/23 23:15 | 10/月           | [NQ](https://nodequality.com/r/GuMOKW4gbIXbtC0xbuHMWMEzfMzGztBV) | 一般                    |
 | ✅        | ❌        | HaloCloud      | 深港专线NAT  | 2025/8/19 20:34 | 30/月           | [NQ](https://nodequality.com/r/ZBbw0d1bDyE6JfKvw7r3co3WLqtRWAOL) | 大口子并且商家负责任    |

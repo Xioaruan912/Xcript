@@ -27,12 +27,10 @@ echo \
 
 echo "=== 安装 Docker 引擎和 Compose 插件 ==="
 sudo apt-get update -y
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 echo "=== 验证版本 ==="
 docker --version
 docker compose version
 
-echo "=== 将当前用户加入 docker 组（免 sudo）==="
-sudo usermod -aG docker $USER
-echo ">>> 请重新登录终端以生效 <<<"
+echo "✅ 安装完成，可以使用 docker 和 docker compose 命令了"
