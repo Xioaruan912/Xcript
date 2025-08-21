@@ -19,7 +19,6 @@ bash复制编辑Xcript/
 
 ```
 curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh" && chmod +x fq.sh && ./fq.sh && rm fq.sh
-
 ```
 
 ### 📦 Docker 安装脚本(docker.sh)
@@ -28,6 +27,14 @@ curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh
 
 ```
 curl -sSL -o docker.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh" && chmod +x docker.sh && ./docker.sh && rm docker.sh
+```
+
+### 📀 Jellyfin 安装脚本(Jellyfin .sh)
+
+> Jellyfin 安装脚本
+
+```
+curl -sSL -o Jellyfin.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh" && chmod +x Jellyfin.sh && ./Jellyfin.sh && rm Jellyfin.sh
 ```
 
 ### 💾 一键备份脚本（backup.sh）
