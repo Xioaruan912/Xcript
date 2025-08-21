@@ -37,6 +37,14 @@ curl -sSL -o docker.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/mai
 curl -sSL -o Jellyfin.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh" && chmod +x Jellyfin.sh && ./Jellyfin.sh && rm Jellyfin.sh
 ```
 
+### ☁️  rclone 安装脚本(rclone .sh)
+
+> rclone  安装脚本
+
+```
+curl -sSL -o rclone.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh" && chmod +x rclone.sh && ./rclone.sh && rm rclone.sh
+```
+
 ### 💾 一键备份脚本（backup.sh）
 
 > 支持 Vaultwarden、Xboard、MongoDB、Nginx 配置等的定时备份（含 Rclone 云同步）
