@@ -10,3 +10,5 @@ echo "🚀 启动容器..."
 docker compose up -d --force-recreate
 
 echo "✅ 重建完成。使用 docker compose logs -f 查看日志。"
+
+docker compose logs -f

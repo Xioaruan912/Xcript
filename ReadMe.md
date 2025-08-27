@@ -13,17 +13,13 @@ bash复制编辑Xcript/
 │   └── clash.yaml      # XBoard 专用 Clash 配置模板
 ```
 
-### ✈️ 科学上网初始化（fq.sh）
-
-> 自动安装基础依赖、配置 DNS、Clash 等一站式操作
+### 科学上网初始化（fq.sh）
 
 ```
 curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh" && chmod +x fq.sh && ./fq.sh && rm fq.sh
 ```
 
-### 📦 Docker 安装脚本(docker.sh)
-
-> Docker安装脚本
+### Docker 安装脚本(docker.sh)
 
 ```
 curl -sSL -o docker.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh" && chmod +x docker.sh && ./docker.sh && rm docker.sh
@@ -31,39 +27,29 @@ curl -sSL -o docker.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/mai
 
 ###  Docker rebuild安装脚本(docker_rebuild.sh)
 
-> Docker rebuild安装脚本
-
 ```
 curl -sSL -o docker_rebuild.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker_rebuild.sh" && chmod +x docker_rebuild.sh && ./docker_rebuild.sh && rm docker_rebuild.sh
 ```
 
-### 📀 Jellyfin 安装脚本(Jellyfin .sh)
-
-> Jellyfin 安装脚本
+### Jellyfin 安装脚本(Jellyfin .sh)
 
 ```
 curl -sSL -o Jellyfin.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh" && chmod +x Jellyfin.sh && ./Jellyfin.sh && rm Jellyfin.sh
 ```
 
-### ☁️  rclone 安装脚本(rclone .sh)
-
-> rclone  安装脚本
+### rclone 安装脚本(rclone .sh)
 
 ```
 curl -sSL -o rclone.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh" && chmod +x rclone.sh && ./rclone.sh && rm rclone.sh
 ```
 
-### 📄  Vaultwarden安装脚本(vaultwarden.sh)
-
-> Vaultwarden  安装脚本
+### Vaultwarden安装脚本(vaultwarden.sh)
 
 ```
 curl -sSL -o vaultwarden.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/vaultwarden.sh" && chmod +x vaultwarden.sh && ./vaultwarden.sh && rm vaultwarden.sh
 ```
 
-### 💾 一键备份脚本（backup.sh）
-
-> 支持 Vaultwarden、Xboard、MongoDB、Nginx 配置等的定时备份（含 Rclone 云同步）
+### 一键备份脚本（backup.sh）
 
 ```
 curl -sSL -o backup.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh" && chmod +x backup.sh && ./backup.sh && rm backup.sh
