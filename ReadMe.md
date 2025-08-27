@@ -29,6 +29,14 @@ curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh
 curl -sSL -o docker.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh" && chmod +x docker.sh && ./docker.sh && rm docker.sh
 ```
 
+###  Docker rebuild安装脚本(docker_rebuild.sh)
+
+> Docker rebuild安装脚本
+
+```
+curl -sSL -o docker_rebuild.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker_rebuild.sh" && chmod +x docker_rebuild.sh && ./docker_rebuild.sh && rm docker_rebuild.sh
+```
+
 ### 📀 Jellyfin 安装脚本(Jellyfin .sh)
 
 > Jellyfin 安装脚本
