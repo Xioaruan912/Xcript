@@ -55,10 +55,16 @@ curl -sSL -o vaultwarden.sh "https://raw.githubusercontent.com/Xioaruan912/Xcrip
 curl -sSL -o backup.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh" && chmod +x backup.sh && ./backup.sh && rm backup.sh
 ```
 
-### Let’s Encrypt
+### Let’s Encrypt (let_encrypt.sh)
 
 ```
 curl -sSL -o let_encrypt.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/let_encrypt.sh" && chmod +x let_encrypt.sh && ./let_encrypt.sh && rm let_encrypt.sh
+```
+
+### 设置上海时区（timeset_Shanghai.sh）
+
+```
+curl -sSL -o timeset_Shanghai.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/timeset_Shanghai.sh" && chmod +x timeset_Shanghai.sh && ./timeset_Shanghai.sh && rm timeset_Shanghai.sh
 ```
 
 
