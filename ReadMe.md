@@ -25,6 +25,18 @@ curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh
 curl -sSL -o docker.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh" && chmod +x docker.sh && ./docker.sh && rm docker.sh
 ```
 
+### Docker 国内安装 安装脚本(docker.sh)
+
+```
+curl -sSL -o docker.sh "https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/docker.sh" && chmod +x docker.sh && ./docker.sh && rm docker.sh
+```
+
+### CertBot 证书自签(certbot.sh)
+
+```
+curl -sSL -o certbot.sh "https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/certbot.sh" && chmod +x certbot.sh && ./certbot.sh && rm certbot.sh
+```
+
 ###  Docker rebuild安装脚本(docker_rebuild.sh)
 
 ```
