@@ -143,6 +143,7 @@ git clone --branch master --depth 1 https://gh-proxy.com/https://github.com/nelv
 | ❌        |          | ISIF           | JP           | 2025/8/05 10:00 | 300/年          | [NQ]( https://nodequality.com/r/8jyl6t0qwRzOBNDKDo1BiBE6aopta34f) |                         |
 | ✅        | ✅        | YXVM           | HK           | 2025/8/06 01:00 | 21/月           | [NQ](https://nodequality.com/r/XJTLmmk3JrwgYvU8VNE7CAxIKGhYQj1Q) |                         |
 | ✅        | ✅        | Bandwagonhost  | USA          | 2025/8/19 20:34 | 203/年          | [NQ]( https://nodequality.com/r/mhyZMAe6FudUH792IjkE04GT8ERXYTeP) | 老商家 需要邀请码       |
+|          |          | Legendvps      | SG           | 2025/9/1 20:34  | 3/cny           | [NQ](https://nodequality.com/r/YY32dWhzTxlWVvv0teWM0tkfXAAsql8H) |                         |
 
 |   确定续费    |    地区     | 续费价格（CNY） |
 | :-----------: | :---------: | :-------------: |
