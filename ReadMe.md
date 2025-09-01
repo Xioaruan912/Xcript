@@ -19,6 +19,12 @@ bash复制编辑Xcript/
 curl -sSL -o fq.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh" && chmod +x fq.sh && ./fq.sh && rm fq.sh
 ```
 
+### 安装MiniConda脚本（fq.sh）
+
+```
+curl -sSL -o miniconda.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh" && chmod +x miniconda.sh && ./miniconda.sh && rm miniconda.sh
+```
+
 ### Docker 安装脚本(docker.sh)
 
 ```
