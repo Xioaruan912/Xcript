@@ -37,6 +37,12 @@ curl -sSL -o docker.sh "https://raw.githubusercontent.com/Xioaruan912/Xcript/mai
 curl -sSL -o docker.sh "https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/docker.sh" && chmod +x docker.sh && ./docker.sh && rm docker.sh
 ```
 
+### Clash 国内安装 安装脚本(clash.sh)
+
+```
+curl -sSL -o clash.sh "https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/clash.sh" && chmod +x clash.sh && ./clash.sh && rm clash.sh
+```
+
 ### CertBot 证书自签(certbot.sh)
 
 ```
