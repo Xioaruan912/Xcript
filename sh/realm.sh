@@ -82,6 +82,6 @@ systemctl enable realm
 systemctl restart realm
 
 # 显示服务状态
-systemctl status realm
 
-echo "所有配置完成！"
+echo "所有配置完成！ 去/root/realm/realm.toml 修改配置文件"
+echo "然后执行 systemctl restart realm" 
