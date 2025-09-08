@@ -65,6 +65,9 @@ wget -qO "$CLASH_DIR/geosite.dat" \
   "${GH_PROXY}https://github.com/Loyalsoldier/v2ray-rules-dat/releases/latest/download/geosite.dat"
 
 echo "所有文件已放置在 $CLASH_DIR"
+export http_proxy="http://127.0.0.1:7890"
+export https_proxy="http://127.0.0.1:7890"
+export all_proxy="socks5://127.0.0.1:7891"
 
 # ========= 提示用户 =========
 echo "安装完成！"
