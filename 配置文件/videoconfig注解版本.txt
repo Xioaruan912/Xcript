@@ -1,0 +1,47 @@
+"VideoConfig"
+{
+	"setting.cl_gib_allow"				"0"			//布娃娃系统		禁用="0"	启用="1.0"
+	"setting.cl_particle_fallback_base"		"3"			//调整游戏中粒子效果的基础数量			低="3"	中&高="0"
+	"setting.cl_particle_fallback_multiplier"		"2"			//特效细节调整		低="2"	中="1.75"	高="1"
+	"setting.cl_ragdoll_maxcount"		"0"			//布娃娃系统调节		低="0"	中="4"	高="8"
+	"setting.cl_ragdoll_self_collision"		"0"		//布娃娃碰撞		禁用="0"	启用="1.0"
+	"setting.mat_forceaniso"		"1"		//①纹理贴图过滤		双&三线性="1"	各向异性过滤="2/4/6/8/16"
+	"setting.mat_mip_linear"		"0"		//②纹理贴图过滤		①为双线性时="0"		①为三线性及以上时="1.0"
+	"setting.stream_memory"		"0"		//纹理串流预算		4~6G VRAM[无]="0"		6G VRAM[很低]="160000"		6.5G VRAM[低]="300000"		7G VRAM[中]="600000"		8G VRAM[高]="1000000"		10G VRAM[很高]="2000000"		10+G VRAM[超高]="3000000"
+	"setting.mat_picmip"		"2"		//纹理质量		低="2"		标准="1"		高="0"
+	"setting.particle_cpu_level"		"0"		//粒子质量	低="0"		中="1.0"		高="2.0"
+	"setting.r_createmodeldecals"		"0"		//冲撞痕迹	禁用/低="0"	高="1.0"
+	"setting.r_decals"		"0"		//冲撞痕迹贴图质量		禁用="0"		低="256"		高:"256"
+	"setting.r_lod_switch_scale"		"0.6"		//渲染距离or模型细节		低="0.6"		中="0.8"		高="1.0"
+	"setting.shadow_enable"		"0"		//阴影		禁用="0"		启用="1"
+	"setting.shadow_depth_dimen_min"		"0"		//点状阴影细节调整				禁用="0"		低="128"		高="256"		非常高:"512"
+	"setting.shadow_depth_upres_factor_max"		"0"		//点状阴影细节调整		禁用="0"		低="2.0"		高="2.0"		非常高:"3.0"
+	"setting.shadow_maxdynamic"		"0"		//动态点光源阴影		禁用="0"		启用="4.0"
+	"setting.ssao_enabled"		"0"		//环境光遮蔽		禁用="0"		启用="1.0"
+	"setting.ssao_downsample"		"3"		//环境光等级		禁用="3"	低="2"	中="1"	高="0"
+	"setting.dvs_enable"		"0"		//自适应分辨率帧率目标		禁用="0"		启用="1.0"	要求:自适应超级采样="1"
+	"setting.dvs_gpuframetime_min"		"15000"		//最小帧生成时间
+	"setting.dvs_gpuframetime_max"		"16500"		//最大帧生成时间
+	"setting.sound_volume"		"0.5"			//游戏音量	音量设置不知道为什么跑到这里来了
+	"setting.last_display_width"		"1920"		//游戏分辨率W		游戏分辨率需要在N卡里有相应分辨率，请自行添加
+	"setting.last_display_height"		"1080"		//游戏分辨率H		游戏分辨率需要在N卡里有相应分辨率，请自行添加
+	"setting.nowindowborder"		"0"		//无边框窗口化		禁用="0"		启用="1"
+	"setting.fullscreen"		"1"				//全屏			禁用="0"		启用="1"
+	"setting.defaultres"		"1920"			//游戏分辨率W		游戏分辨率需要在N卡里有相应分辨率，请自行添加
+	"setting.defaultresheight"		"1080"		//游戏分辨率H		游戏分辨率需要在N卡里有相应分辨率，请自行添加
+	"setting.volumetric_lighting"		"0"		//体积光照系统-用于渲染体积雾		禁用="0"		启用="1"
+	"setting.volumetric_fog"		"0"		//渲染体积雾		禁用="0"		启用="1"
+	"setting.mat_vsync_mode"		"0"			//垂直同步模式			禁用="0"		双缓冲="1"	三重缓冲="2"		自适应="3"		自适应半刷新率="4"
+	"setting.mat_backbuffer_count"		"1"		//垂直同步缓冲			禁用="1"		双缓冲="1"	三重缓冲时="2"		自适应时="1"		自适应半刷新率时="1"
+	"setting.mat_antialias_mode"		"0"		//TSAA抗锯齿		禁用="0"		启用="12"
+	"setting.csm_enabled"		"0"		//级联阴影贴图		禁用="0"		开="1.0"
+	"setting.csm_coverage"		"0"		//级联阴影贴图范围		禁用="0"		低="1.0"		高="2.00"
+	"setting.csm_cascade_res"		"0"		//级联阴影贴图质量		禁用="0"		低="512"		高="1024"
+	"setting.fadeDistScale"		"1.000000"		//渲染距离	保持默认"1"		电脑性能过于低下可尝试0.75或更低，通常保持1即可
+	"setting.dvs_supersample_enable"		"0"		//自适应超级采样	保持关闭
+	"setting.new_shadow_settings"		"0"		//阴影设置
+	"setting.gamma"		"1.000000"		//游戏画面亮度
+	"setting.configversion"		"8"		//版本号
+	"setting.dx_version_check_timestamp"		"0"		//dx版本检查时间戳		保持默认
+	"setting.set_dress_level"		"1"		//地图详情	低="1"		高="2"
+}
