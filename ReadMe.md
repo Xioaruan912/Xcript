@@ -127,6 +127,22 @@ git clone --branch master --depth 1 https://gh-proxy.com/https://github.com/nelv
 据说有神效
 ```
 
+[快速dd Debian12 密码为 MoeClub.org](https://www.byxiao.top/archives/koipy)
+
+```
+bash <(wget --no-check-certificate -qO- 'https://www.moeelf.com/attachment/LinuxShell/InstallNET.sh') -d 12 -v 64 -a
+bash <(wget --no-check-certificate -qO- 'https://www.moeelf.com/attachment/LinuxShell/InstallNET.sh') -d 12 -v 64 -a --mirror 'http://mirrors.huaweicloud.com/debian/'
+apt-get update && apt-get install -y sudo wget curl
+
+```
+
+[阿里云dd Debian13](https://www.nodeseek.com/post-456967-1) 推荐
+
+```
+curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh || wget -O reinstall.sh $_
+bash reinstall.sh debian 13
+```
+
 
 
 # 🧪 VPS 测试记录
