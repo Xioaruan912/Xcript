@@ -141,10 +141,27 @@ https://rule.kelee.one/Loon/12306.lsr, policy=DIRECT, tag=12306.lsr, enabled=tru
 # IP-CIDR, 127.0.0.0/8, DIRECT
 # 配置文件已自带远程GEOIP, cn, DIRECT规则，请勿在此添加
 # 请勿修改远程CN REGION规则的排序甚至删除
-DOMAIN-SUFFIX,adukwai.com,REJECT
-URL-REGEX,meituan\.net/bizad,REJECT
-DOMAIN-SUFFIX,douyinpic.com,REJECT
+
+#小依去除广告
+# —— 域名/后缀直拦 —— 
 DOMAIN-SUFFIX,ugdtimg.com,REJECT
+DOMAIN-SUFFIX,yfanads.com,REJECT
+DOMAIN-SUFFIX,pangolin-sdk-toutiao1.com,REJECT
+DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,REJECT
+DOMAIN-SUFFIX,gifshow.com,REJECT
+DOMAIN-SUFFIX,douyinpic.com,REJECT
+DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
+DOMAIN-SUFFIX,adukwai.com,REJECT
+# —— 精确域名（避免过宽拦截）——
+DOMAIN,open.e.kuaishou.com,REJECT
+DOMAIN,file.xmulife.com,REJECT
+# —— 按 URL 路径/接口拦截——
+URL-REGEX,^https?://images\.pinduoduo\.com/marketing_api,REJECT
+URL-REGEX,^https?://mi\.gdt\.qq\.com,REJECT
+URL-REGEX,^https?://api\.ulife\.group/hotel,REJECT
+URL-REGEX,^https?://www\.qtx2015\.com/api/areaAd/getAreaAd$,REJECT
+
+
 DOMAIN-SUFFIX,local,DIRECT
 GEOIP,CN,DIRECT
 FINAL,FINAL
