@@ -159,7 +159,7 @@ DOMAIN,file.xmulife.com,REJECT
 URL-REGEX,^https?://images\.pinduoduo\.com/marketing_api,REJECT
 URL-REGEX,^https?://mi\.gdt\.qq\.com,REJECT
 URL-REGEX,^https?://api\.ulife\.group/hotel,REJECT
-URL-REGEX,^https?://www\.qtx2015\.com/api/areaAd/getAreaAd$,REJECT
+URL-REGEX,^https?://www\.qtx2015\.com/api/areaAd/getAreaAd,REJECT
 
 
 DOMAIN-SUFFIX,local,DIRECT
