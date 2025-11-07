@@ -141,6 +141,10 @@ https://rule.kelee.one/Loon/12306.lsr, policy=DIRECT, tag=12306.lsr, enabled=tru
 # IP-CIDR, 127.0.0.0/8, DIRECT
 # 配置文件已自带远程GEOIP, cn, DIRECT规则，请勿在此添加
 # 请勿修改远程CN REGION规则的排序甚至删除
+DOMAIN-SUFFIX,adukwai.com,REJECT
+URL-REGEX,meituan\.net/bizad,REJECT
+DOMAIN-SUFFIX,douyinpic.com,REJECT
+DOMAIN-SUFFIX,ugdtimg.com,REJECT
 DOMAIN-SUFFIX,local,DIRECT
 GEOIP,CN,DIRECT
 FINAL,FINAL
