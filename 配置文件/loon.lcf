@@ -103,9 +103,7 @@ https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/
 # Advertising规则
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Advertising/Advertising.list, policy=Advertising, tag=Advertising规则, enabled=true
 https://rule.kelee.one/Loon/Netflix.lsr, policy=Netflix, tag=Netflix规则, enabled=true
-https://github.com/Moli-X/Tool/raw/X/Loon/Rules/TikTok.list, policy=TikTok, tag=海外抖音, enabled=true
-https://github.com/Moli-X/Tool/raw/X/Loon/Rules/HTTPDNS.Block.list, policy=REJECT, tag=阻止常见DNS, enabled=true
-https://github.com/Moli-X/Tool/raw/X/Loon/Rules/Reject.list, policy=REJECT, tag=广告列表, enabled=true
+https://rule.kelee.one/Loon/TikTok.lsr, policy=TikTok, tag=海外抖音, enabled=true
 https://rule.kelee.one/Loon/iCloud.lsr, policy=DIRECT, tag=iCloud.lsr, enabled=true
 https://rule.kelee.one/Loon/Weibo.lsr, policy=DIRECT, tag=Weibo.lsr, enabled=true
 https://rule.kelee.one/Loon/WeChat.lsr, policy=DIRECT, tag=WeChat.lsr, enabled=true
