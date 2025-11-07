@@ -87,7 +87,7 @@ https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/
 # YouTube规则
 https://rule.kelee.one/Loon/YouTube.lsr, policy=YouTube, tag=YouTube规则, enabled=true
 # Spotify规则
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Spotify/Spotify.list, policy=Spotify, tag=Spotify规则, enabled=true
+https://rule.kelee.one/Loon/Spotify.lsr, policy=Spotify, tag=Spotify规则, enabled=true
 # BiliBili规则
 https://rule.kelee.one/Loon/BiliBiliIntl.lsr, policy=BiliBiliIntl, tag=BiliBiliIntl规则, enabled=true
 # Telegram规则
