@@ -130,6 +130,8 @@ https://rule.kelee.one/Loon/BaiDuTieBa.lsr, policy=DIRECT, tag=BaiDuTieBa.lsr, e
 https://rule.kelee.one/Loon/AliPay.lsr, policy=DIRECT, tag=AliPay.lsr, enabled=true
 https://rule.kelee.one/Loon/115.lsr, policy=DIRECT, tag=115.lsr, enabled=true
 https://rule.kelee.one/Loon/12306.lsr, policy=DIRECT, tag=12306.lsr, enabled=true
+#98堂规则 服务器处于美国
+https://raw.githubusercontent.com/Xioaruan912/EverythingRules/refs/heads/main/rules/loon/98Tang.list, policy=OpenAI, tag=98tang, enabled=true
 # -----------------------------------------------------------------------------规则集结束 -----------------------------------------------------------------------------
 
 
