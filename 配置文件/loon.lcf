@@ -130,6 +130,88 @@ https://rule.kelee.one/Loon/BaiDuTieBa.lsr, policy=DIRECT, tag=BaiDuTieBa.lsr, e
 https://rule.kelee.one/Loon/AliPay.lsr, policy=DIRECT, tag=AliPay.lsr, enabled=true
 https://rule.kelee.one/Loon/115.lsr, policy=DIRECT, tag=115.lsr, enabled=true
 https://rule.kelee.one/Loon/12306.lsr, policy=DIRECT, tag=12306.lsr, enabled=true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_1.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_2.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_3.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_4.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_5.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_6.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_7.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_8.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_9.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_10.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_11.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_12.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_13.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_14.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_15.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_16.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_17.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_18.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_19.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_20.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_21.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_22.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_23.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_24.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_25.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_26.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_27.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_28.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_29.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_30.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_31.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_32.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_33.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_34.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_35.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_36.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_37.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_38.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_39.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_40.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_41.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_42.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_43.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_44.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_45.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_46.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_47.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_48.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_49.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_50.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_51.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_52.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_53.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_54.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_55.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_56.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_57.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_58.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_59.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_60.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_61.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_62.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_63.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_64.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_65.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_66.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_67.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_68.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_69.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_70.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_71.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_72.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_73.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_74.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_75.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_76.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_77.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_78.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_79.list, policy = REJECT, tag = 疯狂的规则, enabled = true
+# -----------------------------------------------------------------------------规则集结束 -----------------------------------------------------------------------------
+
+
 [Proxy Chain]
 [Rule]
 # Local Rule
