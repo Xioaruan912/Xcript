@@ -132,6 +132,8 @@ https://rule.kelee.one/Loon/115.lsr, policy=DIRECT, tag=115.lsr, enabled=true
 https://rule.kelee.one/Loon/12306.lsr, policy=DIRECT, tag=12306.lsr, enabled=true
 #98堂规则 服务器处于美国
 https://raw.githubusercontent.com/Xioaruan912/EverythingRules/refs/heads/main/rules/loon/98Tang.list, policy=OpenAI, tag=98tang, enabled=true
+#小依洗衣机去广告
+https://raw.githubusercontent.com/Xioaruan912/EverythingRules/refs/heads/main/rules/loon/xiaoyi.list, policy=Advertising, tag=xiaoyi, enabled=true
 # -----------------------------------------------------------------------------规则集结束 -----------------------------------------------------------------------------
 
 
@@ -151,23 +153,6 @@ https://raw.githubusercontent.com/Xioaruan912/EverythingRules/refs/heads/main/ru
 DOMAIN-SUFFIX,playz.mjji.de,TikTok
 DOMAIN-SUFFIX,emby.heisi.org,TikTok
 DOMAIN-SUFFIX,lite.cn2gias.uk,OpenAI
-#小依去除广告
-DOMAIN-SUFFIX,ugdtimg.com,REJECT
-DOMAIN-SUFFIX,yfanads.com,REJECT
-DOMAIN-SUFFIX,pangolin-sdk-toutiao.com,REJECT
-DOMAIN-SUFFIX,pangolin-sdk-toutiao1.com,REJECT
-DOMAIN-SUFFIX,pangolin-sdk-toutiao-b.com,REJECT
-DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
-DOMAIN-SUFFIX,adukwai.com,REJECT
-DOMAIN-SUFFIX,gifshow.com,REJECT
-DOMAIN,mi.gdt.qq.com,REJECT
-DOMAIN-SUFFIX,umeng.com,REJECT
-DOMAIN-SUFFIX,umengcloud.com,REJECT
-DOMAIN-SUFFIX,xmulife.com,REJECT
-DOMAIN-SUFFIX,ulife.group,REJECT
-DOMAIN-SUFFIX,volces.com,REJECT
-DOMAIN-SUFFIX,open.e.kuaishou.com,REJECT
-
 
 DOMAIN-SUFFIX,local,DIRECT
 GEOIP,CN,DIRECT
