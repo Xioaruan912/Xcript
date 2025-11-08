@@ -27,7 +27,6 @@ resource-parser = https://github.com/sub-store-org/Sub-Store/releases/latest/dow
 
 [Remote Proxy]
 
-
 [Remote Filter]
 # 远程节点订阅正则筛选
 美国 = NameRegex, FilterKey = "(?i)(美国|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥|🇺🇸|US|USA)"
@@ -40,7 +39,7 @@ resource-parser = https://github.com/sub-store-org/Sub-Store/releases/latest/dow
 ## 策略组
 ## 将分流规则传递过来的网络请求进行分发
 # 可供手动选择的所有节点
-Proxy = select,MyProxy,url = http://cp.cloudflare.com/generate_204,img-url = https://raw.githubusercontent.com/erdongchanyo/icon/main/Policy-Filter/Proxy.png
+Proxy = select,url = http://cp.cloudflare.com/generate_204,img-url = https://raw.githubusercontent.com/erdongchanyo/icon/main/Policy-Filter/Proxy.png
 # 自动选择最优节点-HK
 Auto-HK = url-test,香港,url = http://www.gstatic.com/generate_204,interval = 600,img-url = https://raw.githubusercontent.com/erdongchanyo/icon/main/Policy-Filter/Auto.png
 # 服务器按地区分组策略
@@ -55,7 +54,7 @@ TW = select,台湾,url = http://cp.cloudflare.com/generate_204,img-url = https:/
 # > 新加坡
 SG = select,新加坡,url = http://cp.cloudflare.com/generate_204,img-url = https://raw.githubusercontent.com/erdongchanyo/icon/main/Policy-Country/SG.png
 # OutSide策略
-OutSide = select,US,,HK,JP,TW,SG,FINAL,DIRECT,url = http://cp.cloudflare.com/generate_204,img-url = https://raw.githubusercontent.com/erdongchanyo/icon/main/Policy-Filter/Outside.png
+OutSide = select,US,HK,JP,TW,SG,FINAL,DIRECT,url = http://cp.cloudflare.com/generate_204,img-url = https://raw.githubusercontent.com/erdongchanyo/icon/main/Policy-Filter/Outside.png
 # 国外媒体细分策略
 # > YouTube策略
 YouTube = select,US,HK,JP,TW,SG,FINAL,DIRECT,url = http://cp.cloudflare.com/generate_204,img-url = https://raw.githubusercontent.com/erdongchanyo/icon/main/Policy-Filter/Youtube.png
@@ -131,26 +130,6 @@ https://rule.kelee.one/Loon/BaiDuTieBa.lsr, policy=DIRECT, tag=BaiDuTieBa.lsr, e
 https://rule.kelee.one/Loon/AliPay.lsr, policy=DIRECT, tag=AliPay.lsr, enabled=true
 https://rule.kelee.one/Loon/115.lsr, policy=DIRECT, tag=115.lsr, enabled=true
 https://rule.kelee.one/Loon/12306.lsr, policy=DIRECT, tag=12306.lsr, enabled=true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_1.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_2.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_3.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_4.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_5.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_6.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_7.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_8.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_9.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_10.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_11.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_12.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_13.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_14.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_15.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_16.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_17.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_18.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_19.list, policy = REJECT, tag = 疯狂的规则, enabled = true
-https://raw.githubusercontent.com/luestr/CrazyRule/main/Loon/ad-loon_20.list, policy = REJECT, tag = 疯狂的规则, enabled = true
 # -----------------------------------------------------------------------------规则集结束 -----------------------------------------------------------------------------
 
 
@@ -197,6 +176,7 @@ FINAL,FINAL
 [Script]
 
 [Plugin]
+https://kelee.one/Tool/Loon/Lpx/Sub-Store.lpx, policy=Auto-HK, enabled=true
 https://kelee.one/Tool/Loon/Lpx/QuarkBrowser_remove_ads.lpx, enabled=true
 https://kelee.one/Tool/Loon/Lpx/HUPU_remove_ads.lpx, enabled=true
 https://kelee.one/Tool/Loon/Lpx/ColorfulClouds_remove_ads.lpx, enabled=true
