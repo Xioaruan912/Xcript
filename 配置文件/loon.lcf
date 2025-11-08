@@ -84,7 +84,7 @@ FINAL = select,Auto-HK,Proxy,DIRECT,url = http://cp.cloudflare.com/generate_204,
 ## 远程分流规则订阅
 ## 将网络请求进行分流，网络请求的走向(是否能成功访问)由匹配到的策略组决定
 # OutSide规则
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/OutSide/OutSide.list, policy=OutSide, tag=OutSide规则, enabled=true
+https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Loon/China/China.list, policy=OutSide, tag=OutSide规则, enabled=true
 # YouTube规则
 https://rule.kelee.one/Loon/YouTube.lsr, policy=YouTube, tag=YouTube规则, enabled=true
 # Spotify规则
