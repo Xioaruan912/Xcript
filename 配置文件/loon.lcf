@@ -98,7 +98,7 @@ https://rule.kelee.one/Loon/OpenAI.lsr, policy=YouTube, tag=OpenAI规则, enable
 # Mainland规则
 https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/China/China.list, policy=Mainland, tag=Mainland规则, enabled=true
 # Advertising规则
-https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Loon/Advertising/Advertising.list, policy=Advertising, tag=Advertising规则, enabled=true
+https://raw.githubusercontent.com/Cats-Team/AdRules/main/adrules.list, policy=Advertising, tag=Advertising规则, enabled=true
 https://rule.kelee.one/Loon/Netflix.lsr, policy=Netflix, tag=Netflix规则, enabled=true
 https://rule.kelee.one/Loon/TikTok.lsr, policy=TikTok, tag=海外抖音, enabled=true
 https://rule.kelee.one/Loon/iCloud.lsr, policy=DIRECT, tag=iCloud.lsr, enabled=true
