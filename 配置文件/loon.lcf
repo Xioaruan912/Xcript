@@ -154,6 +154,7 @@ DOMAIN-SUFFIX,adukwai.com,REJECT
 DOMAIN-SUFFIX,gdt.qq.com,REJECT
 DOMAIN-SUFFIX,e.kuaishou.com,REJECT
 DOMAIN-SUFFIX,xmulife.com,REJECT
+DOMAIN-SUFFIX,img-x.jd.com,REJECT
 URL-REGEX,^http://images\.pinduoduo\.com/marketing_api(?:[/?#].*)?$,REJECT
 URL-REGEX,^https?://api\.ulife\.group/hotel(?:[/?#].*)?$,REJECT
 URL-REGEX,^https?://(?:www\.)?qtx2015\.com/api/areaAd/getAreaAd(?:[/?#].*)?$,REJECT
