@@ -18,8 +18,8 @@
 
 ### 环境配置脚本
 
-| 脚本名称       | 功能描述               | 安装命令                                                     |       |
-| :------------- | :--------------------- | :----------------------------------------------------------- | ----- |
+| 脚本名称       | 功能描述               | 安装命令                                                     |
+| :------------- | :--------------------- | :----------------------------------------------------------- | 
 | 科学上网初始化 | 环境配置与工具安装     | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh \| bash` |
 | Docker 环境    | Docker 及 Compose 安装 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh \| bash` |
 | MiniConda      | Python 环境管理        | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh \| bash` |
@@ -27,8 +27,8 @@
 
 ### 应用部署脚本
 
-| 脚本名称    | 功能描述       | 安装命令                                                     |       |
-| :---------- | :------------- | :----------------------------------------------------------- | ----- |
+| 脚本名称    | 功能描述       | 安装命令                                                     |
+| :---------- | :------------- | :----------------------------------------------------------- |
 | Jellyfin    | 媒体服务器部署 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh \| bash` |
 | Vaultwarden | 密码管理器部署 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/vaultwarden.sh \| bash` |
 | rclone      | 云存储同步工具 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh \| bash` |
@@ -36,8 +36,8 @@
 
 ### 系统工具脚本
 
-| 脚本名称      | 功能描述       | 安装命令                                                     |       |
-| :------------ | :------------- | :----------------------------------------------------------- | ----- |
+| 脚本名称      | 功能描述       | 安装命令                                                     |
+| :------------ | :------------- | :----------------------------------------------------------- |
 | 一键备份      | 多组件数据备份 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh \| bash` |
 | 时区设置      | 设置上海时区   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/timeset_Shanghai.sh \| bash` |
 | Let's Encrypt | 免费 SSL 证书  | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/let_encrypt.sh \| bash` |
