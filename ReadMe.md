@@ -20,28 +20,28 @@
 
 | 脚本名称       | 功能描述               | 安装命令                                                     |       |
 | :------------- | :--------------------- | :----------------------------------------------------------- | ----- |
-| 科学上网初始化 | 环境配置与工具安装     | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh | bash` |
-| Docker 环境    | Docker 及 Compose 安装 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh | bash` |
-| MiniConda      | Python 环境管理        | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh | bash` |
-| 证书管理       | CertBot SSL 证书       | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/certbot.sh | bash` |
+| 科学上网初始化 | 环境配置与工具安装     | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh \| bash` |
+| Docker 环境    | Docker 及 Compose 安装 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh \| bash` |
+| MiniConda      | Python 环境管理        | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh \| bash` |
+| 证书管理       | CertBot SSL 证书       | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/certbot.sh \| bash` |
 
 ### 应用部署脚本
 
 | 脚本名称    | 功能描述       | 安装命令                                                     |       |
 | :---------- | :------------- | :----------------------------------------------------------- | ----- |
-| Jellyfin    | 媒体服务器部署 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh | bash` |
-| Vaultwarden | 密码管理器部署 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/vaultwarden.sh | bash` |
-| rclone      | 云存储同步工具 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh | bash` |
-| Realm       | 代理隧道工具   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/realm.sh | bash` |
+| Jellyfin    | 媒体服务器部署 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh \| bash` |
+| Vaultwarden | 密码管理器部署 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/vaultwarden.sh \| bash` |
+| rclone      | 云存储同步工具 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh \| bash` |
+| Realm       | 代理隧道工具   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/realm.sh \| bash` |
 
 ### 系统工具脚本
 
 | 脚本名称      | 功能描述       | 安装命令                                                     |       |
 | :------------ | :------------- | :----------------------------------------------------------- | ----- |
-| 一键备份      | 多组件数据备份 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh | bash` |
-| 时区设置      | 设置上海时区   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/timeset_Shanghai.sh | bash` |
-| Let's Encrypt | 免费 SSL 证书  | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/let_encrypt.sh | bash` |
-| Docker 重建   | 容器环境重建   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker_rebuild.sh | bash` |
+| 一键备份      | 多组件数据备份 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh \| bash` |
+| 时区设置      | 设置上海时区   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/timeset_Shanghai.sh \| bash` |
+| Let's Encrypt | 免费 SSL 证书  | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/let_encrypt.sh \| bash` |
+| Docker 重建   | 容器环境重建   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker_rebuild.sh \| bash` |
 
 ------
 
@@ -54,10 +54,10 @@ bash
 
 ```
 # Docker 安装（国内镜像）
-curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/docker.sh | bash
+curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/docker.sh \| bash
 
 # Clash 安装（国内镜像）
-curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/clash.sh | bash
+curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/clash.sh \| bash
 ```
 
 
