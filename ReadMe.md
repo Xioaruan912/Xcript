@@ -16,34 +16,37 @@
 
 ## 🚀 快速安装
 
-### 环境配置脚本
+## 🔧 **环境配置脚本**
 
-| 脚本名称       | 功能描述               | 安装命令                                                     |
-| :------------- | :--------------------- | :----------------------------------------------------------- | 
-| 科学上网初始化 | 环境配置与工具安装     | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh \| bash` |
-| Docker 环境    | Docker 及 Compose 安装 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh \| bash` |
-| MiniConda      | Python 环境管理        | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh \| bash` |
-| 证书管理       | CertBot SSL 证书       | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/certbot.sh \| bash` |
-
-### 应用部署脚本
-
-| 脚本名称    | 功能描述       | 安装命令                                                     |
-| :---------- | :------------- | :----------------------------------------------------------- |
-| Jellyfin    | 媒体服务器部署 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh \| bash` |
-| Vaultwarden | 密码管理器部署 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/vaultwarden.sh \| bash` |
-| rclone      | 云存储同步工具 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh \| bash` |
-| Realm       | 代理隧道工具   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/realm.sh \| bash` |
-
-### 系统工具脚本
-
-| 脚本名称      | 功能描述       | 安装命令                                                     |
-| :------------ | :------------- | :----------------------------------------------------------- |
-| 一键备份      | 多组件数据备份 | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh \| bash` |
-| 时区设置      | 设置上海时区   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/timeset_Shanghai.sh \| bash` |
-| Let's Encrypt | 免费 SSL 证书  | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/let_encrypt.sh \| bash` |
-| Docker 重建   | 容器环境重建   | `curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker_rebuild.sh \| bash` |
+| 脚本名称       | 功能描述               | 建议安装命令                                                 |
+| -------------- | ---------------------- | ------------------------------------------------------------ |
+| 科学上网初始化 | 环境配置与工具安装     | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh)` |
+| Docker 环境    | Docker 及 Compose 安装 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh)` |
+| MiniConda      | Python 环境管理        | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh)` |
+| CertBot 证书   | SSL 证书申请           | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/certbot.sh)` |
 
 ------
+
+## 📦 **应用部署脚本**
+
+| 脚本名称    | 功能描述       | 建议安装命令                                                 |
+| ----------- | -------------- | ------------------------------------------------------------ |
+| Jellyfin    | 媒体服务器部署 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh)` |
+| Vaultwarden | 密码管理器部署 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/vaultwarden.sh)` |
+| rclone      | 云存储同步工具 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh)` |
+| Realm       | 代理隧道工具   | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/realm.sh)` |
+
+------
+
+## 🔨 **系统工具脚本**
+
+| 脚本名称         | 功能描述                | 建议安装命令                                                 |
+| ---------------- | ----------------------- | ------------------------------------------------------------ |
+| 一键备份         | 多组件数据备份          | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh)` |
+| 时区设置（上海） | 设置 Asia/Shanghai 时区 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/timeset_Shanghai.sh)` |
+| Let's Encrypt    | 免费 SSL 证书续期/申请  | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/let_encrypt.sh)` |
+| Docker 重建      | Docker 容器/环境重建    | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker_rebuild.sh)` |
+
 
 ## 🔧 国内镜像加速
 
@@ -115,7 +118,6 @@ bash reinstall.sh debian 13
 
 ## 🎯 未来计划
 
-- 添加 PushDeer 通知模块
 - 支持更多云服务自动备份
 - 开发自建 CDN 工具集
 - 增强错误处理和日志记录
