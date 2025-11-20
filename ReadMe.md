@@ -42,7 +42,7 @@
 
 | 脚本名称         | 功能描述                | 建议安装命令                                                 |
 | ---------------- | ----------------------- | ------------------------------------------------------------ |
-| 一键备份         | 多组件数据备份          | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh)` |
+| 一键备份         | 多组件数据备份          | ```bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh)``` |
 | 时区设置（上海） | 设置 Asia/Shanghai 时区 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/timeset_Shanghai.sh)` |
 | Let's Encrypt    | 免费 SSL 证书续期/申请  | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/let_encrypt.sh)` |
 | Docker 重建      | Docker 容器/环境重建    | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker_rebuild.sh)` |
@@ -58,11 +58,11 @@ bash
 ```
 # Docker 安装（国内镜像）
 curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/docker.sh \| bash
-
+```
+```
 # Clash 安装（国内镜像）
 curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/clash.sh \| bash
 ```
-
 
 
 ------
@@ -71,57 +71,28 @@ curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcrip
 
 ### 服务器质量检测
 
-bash
-
 ```
 # NodeQuality 服务器检测
 bash <(curl -sL https://run.NodeQuality.com)
-
+```
+```
 # NodeScriptKit 脚本集合
 bash <(curl -sL https://sh.nodeseek.com)
-
+```
+```
 # Clash for Linux 安装
 git clone --depth 1 https://gh-proxy.com/https://github.com/nelvko/clash-for-linux-install.git
 cd clash-for-linux-install && sudo bash install.sh
 ```
-
-
-
-### 系统重装脚本
-
-bash
-
 ```
 # 快速重装 Debian 12
 bash <(wget -qO- 'https://www.moeelf.com/attachment/LinuxShell/InstallNET.sh') -d 12 -v 64 -a
-
+```
+```
 # 阿里云优化版 Debian 13
 curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh
 bash reinstall.sh debian 13
 ```
-
-
-
-------
-
-## 📊 VPS 使用记录
-
-### 当前在用服务器
-
-| 服务商 | 地区         | 配置     | 续费价格  | 状态       |
-| :----- | :----------- | :------- | :-------- | :--------- |
-| Claw   | 日本优化线路 | 常规配置 | 59元/季度 | ✅ 主力使用 |
-| 亚洲云 | 香港CN2      | 常规配置 | 99元/年   | ✅ 稳定运行 |
-| GGY    | 广港专线NAT  | 常规配置 | 99元/年   | ✅ 稳定运行 |
-| YXVM   | 香港         | 常规配置 | 21元/月   | ✅ 稳定运行 |
-
-
-## 🎯 未来计划
-
-- 支持更多云服务自动备份
-- 开发自建 CDN 工具集
-- 增强错误处理和日志记录
-
 ------
 
 ## 🙏 致谢
