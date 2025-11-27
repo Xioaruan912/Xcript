@@ -1,6 +1,6 @@
 #!/bin/bash
 # VPS 清理脚本
-
+clear
 echo "⚠️  本脚本将执行以下清理操作："
 echo "  - 清理 APT/YUM 缓存"
 echo "  - 清理 /tmp"
