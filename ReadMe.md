@@ -21,6 +21,7 @@
 | 脚本名称       | 功能描述               | 建议安装命令                                                 |
 | -------------- | ---------------------- | ------------------------------------------------------------ |
 | 科学上网初始化 | 环境配置与工具安装     | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh)` |
+| 清理垃圾文件内容 | 环境     | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/clean.sh)` |
 | Docker 环境    | Docker 及 Compose 安装 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh)` |
 | MiniConda      | Python 环境管理        | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh)` |
 | CertBot 证书   | SSL 证书申请           | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/certbot.sh)` |
