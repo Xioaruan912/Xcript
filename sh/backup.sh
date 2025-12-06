@@ -1,176 +1,185 @@
 #!/bin/bash
 
-# ----------------------
-# 通用自动备份脚本（支持上传到 OneDrive）
-# 失败项会在本地一直 while 重试，直到成功，不退出整个脚本
-# ----------------------
+# =========================================================
+#  全交互式备份脚本 (无需修改代码，运行即可配置)
+# =========================================================
 
-# === 0、通用设置 ===
-RETRY_DELAY="${RETRY_DELAY:-60}"   # 失败后的重试间隔（秒）
+# 获取脚本所在目录，配置文件将保存在这里
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+CONF_FILE="$SCRIPT_DIR/backup.conf"
 
-# === 一、加载外部配置（如有） ===
-CONFIG_FILE="$(dirname "$0")/backup.conf"
-if [ -f "$CONFIG_FILE" ]; then
-    # shellcheck source=/dev/null
-    source "$CONFIG_FILE"
-fi
+# 颜色定义
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+NC='\033[0m'
 
-# === 二、日期与目录配置 ===
-DATE=$(date +'%Y-%m-%d')
-BASE_BACKUP_DIR="${BASE_BACKUP_DIR:-/root/backup/backup}"
-BACKUP_DIR="$BASE_BACKUP_DIR/$DATE"
-mkdir -p "$BACKUP_DIR"
+# =========================================================
+#  函数：配置向导 (生成配置文件)
+# =========================================================
+configure_wizard() {
+    clear
+    echo -e "${BLUE}############################################${NC}"
+    echo -e "${BLUE}#      欢迎使用 X-Backup 配置向导          #${NC}"
+    echo -e "${BLUE}############################################${NC}"
+    echo -e "配置文件将保存在: $CONF_FILE\n"
 
-# === 三、备份项定义（数组，每项为 name:type:src_path:filename）===
-# type: dir/file/mongo/script
-BACKUP_ITEMS=(
-    "Vaultwarden:dir:/root/Vaultwarden/data:vaultwarden-backup-$DATE.tar.gz"
-    "XBoard:dir:/root/Xboard/.docker/.data:xboard-backup-$DATE.tar.gz"
-    "Nginx:dir:/etc/nginx:nginx-backup-$DATE.tar.gz"
-    "Komari:dir:/opt/komari/:Komari-backup-$DATE.tar.gz"
-    # "Nezha:dir:/opt/nezha:nezha-backup-$DATE.tar.gz"
-    "Script:script:$0:backup-script-$DATE.sh"
-    "MongoDB:mongo::mongodb-backup-$DATE.tar.gz"
-    "Nexusterminal:dir:/root/nexus-terminal/data:Nexusterminal-backup-$DATE.tar.gz"
-)
+    # 1. 设置本地备份目录
+    read -e -p "1. 本地备份存放目录 (默认: /root/backup): " INPUT_DIR
+    LOCAL_DIR="${INPUT_DIR:-/root/backup}"
+    
+    # 2. 设置 Rclone 远程
+    echo -e "\n2. Rclone 远程配置 (例如: onedrive:backup)"
+    echo -e "   如果没有配置 Rclone 或只想本地备份，请直接回车跳过。"
+    read -e -p "   请输入 Rclone 名称: " INPUT_REMOTE
+    REMOTE_DEST="$INPUT_REMOTE"
 
-# === 四、MongoDB 配置（可在 backup.conf 覆盖） ===
-MONGO_HOST="${MONGO_HOST:-127.0.0.1}"
-MONGO_PORT="${MONGO_PORT:-27017}"
-MONGO_USER="${MONGO_USER:-root}"
-MONGO_PASS="${MONGO_PASS:-password}"
-MONGO_AUTH_DB="${MONGO_AUTH_DB:-admin}"
+    # 3. 设置保留天数
+    echo -e "\n3. 备份保留策略"
+    read -e -p "   本地保留几天? (默认: 7): " INPUT_LDAY
+    KEEP_LOCAL="${INPUT_LDAY:-7}"
+    
+    if [ -n "$REMOTE_DEST" ]; then
+        read -e -p "   远程保留几天? (默认: 15): " INPUT_RDAY
+        KEEP_REMOTE="${INPUT_RDAY:-15}"
+    else
+        KEEP_REMOTE=0
+    fi
 
-# === 五、远程上传配置 ===
-RCLONE_REMOTE="${RCLONE_REMOTE:-myonedrive:backup}"
-
-# === 六、封装一个带永久重试的备份函数 ===
-backup_with_retry() {
-    local NAME="$1"
-    local TYPE="$2"
-    local SRC_PATH="$3"
-    local FILENAME="$4"
-
-    echo "[*] 开始备份 $NAME（类型：$TYPE）..."
+    # 4. 循环添加备份项目
+    echo -e "\n4. 添加要备份的文件或目录 (输入完一个回车，直接回车结束)"
+    BACKUP_ITEMS=()
     while true; do
-        case "$TYPE" in
-            dir)
-                if [ -d "$SRC_PATH" ]; then
-                    tar -czf "$BACKUP_DIR/$FILENAME" -C "$SRC_PATH" . 2>/tmp/${NAME}_tar.err
-                    if [ $? -eq 0 ]; then
-                        echo "[✓] $NAME 目录打包成功 -> $BACKUP_DIR/$FILENAME"
-                        break
-                    else
-                        echo "[!] $NAME 压缩失败：$(cat /tmp/${NAME}_tar.err 2>/dev/null)"
-                    fi
-                else
-                    echo "[!] $NAME 目录不存在：$SRC_PATH"
-                fi
-                ;;
-
-            file)
-                if [ -f "$SRC_PATH" ]; then
-                    tar -czf "$BACKUP_DIR/$FILENAME" -C "$(dirname "$SRC_PATH")" "$(basename "$SRC_PATH")" 2>/tmp/${NAME}_tar.err
-                    if [ $? -eq 0 ]; then
-                        echo "[✓] $NAME 文件打包成功 -> $BACKUP_DIR/$FILENAME"
-                        break
-                    else
-                        echo "[!] $NAME 压缩失败：$(cat /tmp/${NAME}_tar.err 2>/dev/null)"
-                    fi
-                else
-                    echo "[!] $NAME 文件不存在：$SRC_PATH"
-                fi
-                ;;
-
-            mongo)
-                MONGO_BACKUP_DIR="/tmp/mongo_backup_$DATE"
-                rm -rf "$MONGO_BACKUP_DIR"
-                mkdir -p "$MONGO_BACKUP_DIR"
-
-                # mongodump 失败会重试
-                mongodump --host "$MONGO_HOST" --port "$MONGO_PORT" \
-                    --username "$MONGO_USER" --password "$MONGO_PASS" \
-                    --authenticationDatabase "$MONGO_AUTH_DB" \
-                    --out "$MONGO_BACKUP_DIR" 2>/tmp/${NAME}_dump.err
-
-                if [ $? -ne 0 ]; then
-                    echo "[!] MongoDB 备份失败：$(tail -n 5 /tmp/${NAME}_dump.err 2>/dev/null)"
-                    rm -rf "$MONGO_BACKUP_DIR"
-                else
-                    tar -czf "$BACKUP_DIR/$FILENAME" -C "$MONGO_BACKUP_DIR" . 2>/tmp/${NAME}_tar.err
-                    if [ $? -eq 0 ]; then
-                        echo "[✓] MongoDB 压缩成功 -> $BACKUP_DIR/$FILENAME"
-                        rm -rf "$MONGO_BACKUP_DIR"
-                        break
-                    else
-                        echo "[!] MongoDB 压缩失败：$(cat /tmp/${NAME}_tar.err 2>/dev/null)"
-                        rm -rf "$MONGO_BACKUP_DIR"
-                    fi
-                fi
-                ;;
-
-            script)
-                if [ -f "$SRC_PATH" ]; then
-                    cp "$SRC_PATH" "$BACKUP_DIR/$FILENAME" 2>/tmp/${NAME}_cp.err
-                    if [ $? -eq 0 ]; then
-                        echo "[✓] $NAME 脚本复制成功 -> $BACKUP_DIR/$FILENAME"
-                        break
-                    else
-                        echo "[!] $NAME 脚本复制失败：$(cat /tmp/${NAME}_cp.err 2>/dev/null)"
-                    fi
-                else
-                    echo "[!] $NAME 脚本不存在：$SRC_PATH"
-                fi
-                ;;
-
-            *)
-                echo "[!] 未知备份类型：$TYPE（$NAME）"
-                # 未知类型没法处理，避免死循环：仍然休眠重试，方便后续修正配置后继续
-                ;;
-        esac
-
-        echo "[…] $NAME 将在 ${RETRY_DELAY}s 后重试"
-        sleep "$RETRY_DELAY"
+        read -e -p "   请输入路径 (结束请回车): " ITEM_PATH
+        if [ -z "$ITEM_PATH" ]; then
+            break
+        fi
+        
+        # 简单检查路径是否存在
+        if [ ! -e "$ITEM_PATH" ]; then
+            echo -e "   ${YELLOW}[警告] 路径不存在: $ITEM_PATH (但已添加到列表)${NC}"
+        else
+            echo -e "   ${GREEN}[已添加] $ITEM_PATH${NC}"
+        fi
+        BACKUP_ITEMS+=("$ITEM_PATH")
     done
+
+    # 如果没有添加任何项目
+    if [ ${#BACKUP_ITEMS[@]} -eq 0 ]; then
+        echo -e "\n${RED}[错误] 未配置任何备份项目，退出。${NC}"
+        exit 1
+    fi
+
+    # 5. 生成配置文件
+    echo -e "\n正在生成配置文件..."
+    
+    cat > "$CONF_FILE" <<EOF
+# X-Backup 配置文件 (由脚本自动生成)
+# 生成时间: $(date)
+
+# 本地备份根目录
+BACKUP_ROOT="$LOCAL_DIR"
+
+# 远程 Rclone 路径 (留空则不上传)
+REMOTE_DEST="$REMOTE_DEST"
+
+# 保留天数
+KEEP_LOCAL=$KEEP_LOCAL
+KEEP_REMOTE=$KEEP_REMOTE
+
+# 备份列表 (数组格式)
+BACKUP_LIST=(
+EOF
+
+    # 写入数组内容
+    for item in "${BACKUP_ITEMS[@]}"; do
+        echo "    \"$item\"" >> "$CONF_FILE"
+    done
+
+    echo ")" >> "$CONF_FILE"
+
+    echo -e "${GREEN}[成功] 配置已保存！${NC}"
+    echo -e "您可以随时运行 ${YELLOW}bash $0 config${NC} 重新配置。"
+    echo -e "-----------------------------------------------------\n"
 }
 
-# === 七、备份主循环（单项失败将永久重试） ===
-for item in "${BACKUP_ITEMS[@]}"; do
-    IFS=":" read -r NAME TYPE SRC_PATH FILENAME <<< "$item"
-    backup_with_retry "$NAME" "$TYPE" "$SRC_PATH" "$FILENAME"
-done
+# =========================================================
+#  函数：执行备份任务
+# =========================================================
+run_backup() {
+    # 读取配置
+    source "$CONF_FILE"
+    
+    DATE_STR=$(date +'%Y-%m-%d')
+    TODAY_DIR="$BACKUP_ROOT/$DATE_STR"
+    mkdir -p "$TODAY_DIR"
 
-# === 八、上传备份到 OneDrive（如失败，不退出，但会提示） ===
-echo "[*] 上传备份到 OneDrive..."
-rclone copy "$BACKUP_DIR" "$RCLONE_REMOTE/$DATE" --log-level INFO
-if [ $? -ne 0 ]; then
-    echo "[!] 上传失败（不会退出）。你可以稍后手动重试："
-    echo "    rclone copy \"$BACKUP_DIR\" \"$RCLONE_REMOTE/$DATE\" --log-level INFO"
-else
-    echo "[✓] 上传成功：$DATE 目录"
-fi
+    echo -e "${BLUE}[INFO] 开始备份任务: $DATE_STR${NC}"
 
-# === 九、本地清理：删除 7 天前的旧备份目录 ===
-echo "[*] 清理本地超过 7 天的旧备份..."
-find "$BASE_BACKUP_DIR" -mindepth 1 -maxdepth 1 -type d -mtime +7 -exec rm -rf {} \;
-
-# === 十、OneDrive 清理：删除 4 天前的旧目录（失败不退出） ===
-echo "[*] 清理 OneDrive 上 4 天前的备份..."
-FOUR_DAYS_AGO=$(date -d "-4 days" +%Y-%m-%d)
-OLD_DIRS=$(rclone lsf "$RCLONE_REMOTE/" --dirs-only 2>/tmp/rclone_lsf.err)
-if [ $? -ne 0 ]; then
-    echo "[!] 远程目录列表获取失败：$(cat /tmp/rclone_lsf.err 2>/dev/null)"
-else
-    for dir in $OLD_DIRS; do
-        dir_cleaned=$(echo "$dir" | sed 's:/*$::')
-        if [[ "$dir_cleaned" < "$FOUR_DAYS_AGO" ]]; then
-            echo "[!] 删除旧远程目录: $dir_cleaned"
-            rclone purge "$RCLONE_REMOTE/$dir_cleaned"
-            if [ $? -ne 0 ]; then
-                echo "[!] 删除远程目录失败：$dir_cleaned（不会退出）"
+    # 1. 执行打包
+    for SRC in "${BACKUP_LIST[@]}"; do
+        NAME=$(basename "$SRC")
+        TARGET="$TODAY_DIR/${NAME}_${DATE_STR}.tar.gz"
+        
+        if [ -e "$SRC" ]; then
+            tar -czPf "$TARGET" "$SRC" 2>/dev/null
+            if [ $? -eq 0 ]; then
+                echo -e "  [备份成功] $SRC -> $TARGET"
+            else
+                echo -e "  ${RED}[备份失败] $SRC (Tar error)${NC}"
             fi
+        else
+            echo -e "  ${YELLOW}[跳过] 源路径不存在: $SRC${NC}"
         fi
     done
+
+    # 2. Rclone 上传
+    if [ -n "$REMOTE_DEST" ]; then
+        echo -e "${BLUE}[INFO] 正在上传到远程: $REMOTE_DEST${NC}"
+        rclone copy "$TODAY_DIR" "$REMOTE_DEST/$DATE_STR" --log-level ERROR
+    fi
+
+    # 3. 清理本地
+    echo -e "${BLUE}[INFO] 清理本地旧备份 (保留 $KEEP_LOCAL 天)${NC}"
+    find "$BACKUP_ROOT" -mindepth 1 -maxdepth 1 -type d -mtime +$KEEP_LOCAL -exec rm -rf {} \;
+
+    # 4. 清理远程
+    if [ -n "$REMOTE_DEST" ]; then
+        echo -e "${BLUE}[INFO] 清理远程旧备份 (保留 $KEEP_REMOTE 天)${NC}"
+        # 简单计算截止时间戳
+        CUTOFF_TS=$(date -d "-$KEEP_REMOTE days" +%s)
+        REMOTE_DIRS=$(rclone lsf "$REMOTE_DEST" --dirs-only 2>/dev/null)
+        
+        for R_DIR in $REMOTE_DIRS; do
+            DIR_NAME=${R_DIR%/}
+            if [[ "$DIR_NAME" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+                DIR_TS=$(date -d "$DIR_NAME" +%s 2>/dev/null)
+                if [[ -n "$DIR_TS" && $DIR_TS -lt $CUTOFF_TS ]]; then
+                    echo "  删除远程: $DIR_NAME"
+                    rclone purge "$REMOTE_DEST/$DIR_NAME" 2>/dev/null
+                fi
+            fi
+        done
+    fi
+    
+    echo -e "${GREEN}[完成] 所有任务执行完毕。${NC}"
+}
+
+# =========================================================
+#  主逻辑入口
+# =========================================================
+
+# 如果带参数 config，或者配置文件不存在，则进入配置向导
+if [ "$1" == "config" ] || [ ! -f "$CONF_FILE" ]; then
+    configure_wizard
+    
+    read -p "是否立即运行一次备份? (y/n): " RUN_NOW
+    if [[ "$RUN_NOW" != "y" ]]; then
+        echo "已退出。以后只需运行 bash $0 即可自动备份。"
+        exit 0
+    fi
 fi
 
-echo "[✔] 所有备份任务完成：$DATE"
+# 运行备份
+run_backup
