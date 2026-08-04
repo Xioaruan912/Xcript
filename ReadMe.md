@@ -20,7 +20,6 @@
 
 | 脚本名称       | 功能描述               | 建议安装命令                                                 |
 | -------------- | ---------------------- | ------------------------------------------------------------ |
-| 科学上网初始化 | 环境配置与工具安装     | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/fq.sh)` |
 | 清理垃圾文件内容 | 环境     | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/clean.sh)` |
 | Docker 环境    | Docker 及 Compose 安装 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh)` |
 | MiniConda      | Python 环境管理        | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh)` |
@@ -32,7 +31,6 @@
 
 | 脚本名称    | 功能描述       | 建议安装命令                                                 |
 | ----------- | -------------- | ------------------------------------------------------------ |
-| Jellyfin    | 媒体服务器部署 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/Jellyfin.sh)` |
 | Vaultwarden | 密码管理器部署 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/vaultwarden.sh)` |
 | rclone      | 云存储同步工具 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh)` |
 | Realm       | 代理隧道工具   | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/realm.sh)` |
@@ -94,16 +92,3 @@ bash <(wget -qO- 'https://www.moeelf.com/attachment/LinuxShell/InstallNET.sh') -
 curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh
 bash reinstall.sh debian 13
 ```
-------
-
-## 🙏 致谢
-
-感谢以下社区和项目的支持：
-
-- [NodeSeek 社区](https://www.nodeseek.com/)
-- [digvps VPS 测评](https://digvps.com/)
-- 所有开源项目的贡献者
-
-------
-
-**Note**: 本项目持续更新，欢迎 Star ⭐ 和 Fork！
