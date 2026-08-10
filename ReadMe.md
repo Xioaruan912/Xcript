@@ -68,27 +68,22 @@ curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcrip
 
 ## 🛠 第三方工具推荐
 
-### 服务器质量检测
-
 ```
 # NodeQuality 服务器检测
 bash <(curl -sL https://run.NodeQuality.com)
 ```
 ```
-# NodeScriptKit 脚本集合
-bash <(curl -sL https://sh.nodeseek.com)
-```
-```
-# Clash for Linux 安装
-git clone --depth 1 https://gh-proxy.com/https://github.com/nelvko/clash-for-linux-install.git
-cd clash-for-linux-install && sudo bash install.sh
-```
-```
-# 快速重装 Debian 12
-bash <(wget -qO- 'https://www.moeelf.com/attachment/LinuxShell/InstallNET.sh') -d 12 -v 64 -a
+# TcpQuality 服务器检测
+bash <(curl -fsSL https://raw.githubusercontent.com/ibsgss/TcpQuality/main/runTcpQuality.sh)
 ```
 ```
 # 阿里云优化版 Debian 13
 curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh
 bash reinstall.sh debian 13
 ```
+
+```
+#TCP优化 全1回车即可
+bash <(curl -fsSL https://raw.githubusercontent.com/Kylin010/tcpfit/main/tcpfit.sh)
+```
+
