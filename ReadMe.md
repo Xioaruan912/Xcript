@@ -1,89 +1,121 @@
-# 🌐 Xcript 脚本集合
+# Xcript
 
-> 🚀 本项目收录了我日常使用或通过 AI 辅助开发的实用脚本，涵盖环境配置、容器管理、备份工具等。持续维护中，欢迎使用和改进！
+平时自用的一些 VPS / Windows 脚本，复制就能跑。
 
-> [!CAUTION]
-> 本仓库发布的脚本仅用于学习和研究目的，**不得将本仓库内容用于商业或者非法用途**。否则，一切后果由您自行负责。
->
-> **使用本仓库内容视为同意遵守上述条款**
+交互式脚本请用 `bash <(curl -sSL <URL>)` 运行。别用管道（`curl ... | bash`），不然脚本里的 `read` 读不到你的输入。
 
-> [!IMPORTANT]
-> 本仓库提供的脚本均为我自己编写或基于开源项目修改。部分脚本引用了其他开源项目，均已保留原作者署名信息。
->
-> 转载时请保留原作者署名信息，且遵守本仓库的许可协议。
-
-------
-
-## 🚀 快速安装
-
-## 🔧 **环境配置脚本**
-
-| 脚本名称       | 功能描述               | 建议安装命令                                                 |
-| -------------- | ---------------------- | ------------------------------------------------------------ |
-| 清理垃圾文件内容 | 环境     | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/clean.sh)` |
-| Docker 环境    | Docker 及 Compose 安装 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker.sh)` |
-| MiniConda      | Python 环境管理        | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/miniconda.sh)` |
-| CertBot 证书   | SSL 证书申请           | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/certbot.sh)` |
-
-------
-
-## 📦 **应用部署脚本**
-
-| 脚本名称    | 功能描述       | 建议安装命令                                                 |
-| ----------- | -------------- | ------------------------------------------------------------ |
-| Vaultwarden | 密码管理器部署 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/vaultwarden.sh)` |
-| rclone      | 云存储同步工具 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/rclone.sh)` |
-| Realm       | 代理隧道工具   | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/realm.sh)` |
-
-------
-
-## 🔨 **系统工具脚本**
-
-| 脚本名称         | 功能描述                | 建议安装命令                                                 |
-| ---------------- | ----------------------- | ------------------------------------------------------------ |
-| 一键备份         | 多组件数据备份          | ```bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/backup.sh)``` |
-| 时区设置（上海） | 设置 Asia/Shanghai 时区 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/timeset_Shanghai.sh)` |
-| Let's Encrypt    | 免费 SSL 证书续期/申请  | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/let_encrypt.sh)` |
-| Docker 重建      | Docker 容器/环境重建    | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/docker_rebuild.sh)` |
-
-
-## 🔧 国内镜像加速
-
-> [!TIP]
-> 如果 GitHub 访问缓慢，可以使用以下国内镜像加速下载：
-
-bash
+## 目录结构
 
 ```
-# Docker 安装（国内镜像）
-curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/docker.sh \| bash
-```
-```
-# Clash 安装（国内镜像）
-curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/sh/CN/clash.sh \| bash
+linux/
+  basic/    基础（清理、时区、Miniconda）
+  docker/   Docker 与 Compose
+  cert/     证书
+  app/      应用（Vaultwarden、Jellyfin）
+  network/  网络（realm、mihomo）
+  backup/   备份（rclone、自动备份）
+windows/
+  codex-switcher/   Codex 配置切换器
 ```
 
+## Linux（Debian / Ubuntu）
 
-------
+需要 root 的脚本会自己 `sudo`。
 
-## 🛠 第三方工具推荐
+**基础**
 
+| 用途 | 命令 |
+| --- | --- |
+| 清理缓存、日志、旧内核 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/basic/clean.sh)` |
+| 时区设为 Asia/Shanghai | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/basic/timeset_Shanghai.sh)` |
+| 安装 Miniconda（默认 /opt/miniconda） | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/basic/miniconda.sh)` |
+
+**Docker**
+
+| 用途 | 命令 |
+| --- | --- |
+| 安装 / 更新 Docker + Compose（自动换源） | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/docker/docker.sh)` |
+| 国内镜像版 Docker + Compose | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/docker/docker-cn.sh)` |
+| 强制重建当前目录的 compose 项目 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/docker/docker_rebuild.sh)` |
+
+**证书**
+
+| 用途 | 命令 |
+| --- | --- |
+| Let's Encrypt 证书（Nginx，自动装 certbot） | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/cert/certbot.sh)` |
+| Let's Encrypt 证书 + 续期自检（snap 版） | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/cert/let_encrypt.sh)` |
+
+**应用**
+
+| 用途 | 命令 |
+| --- | --- |
+| Vaultwarden 密码管理器（含 Docker） | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/app/vaultwarden.sh)` |
+| Jellyfin 媒体服务器（含 Docker） | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/app/jellyfin.sh)` |
+
+**网络**
+
+| 用途 | 命令 |
+| --- | --- |
+| realm 端口转发 + 开启 BBR | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/network/realm.sh)` |
+| Clash.Meta / mihomo 内核 + Geo 数据 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/network/clash.sh)` |
+
+**备份**
+
+| 用途 | 命令 |
+| --- | --- |
+| rclone 安装 + OneDrive 等云盘挂载 | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/backup/rclone.sh)` |
+| 通用自动备份（打包 + 上传） | `bash <(curl -sSL https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/backup/backup.sh)` |
+
+## Windows 10 / 11
+
+**Codex 配置切换**：在官方 OpenAI、OpenCode Go、DeepSeek 官方和自定义中转站之间切换 Codex 配置。
+
+PowerShell：
+
+```powershell
+iwr -UseBasicParsing https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex.bat -OutFile "$env:TEMP\codex.bat"; & "$env:TEMP\codex.bat"
 ```
-# NodeQuality 服务器检测
+
+CMD：
+
+```bat
+curl -L -o "%TEMP%\codex.bat" https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex.bat && "%TEMP%\codex.bat"
+```
+
+进菜单后用数字键选提供商，`A` 添加中转站，`B` 管理备份，`S` 看状态，`O` 打开配置目录。填了 API Key 会自动列出该 Key 能用的模型。也支持 `-Switch`、`-Status`、`-Restore` 等参数，详见 [windows/codex-switcher/README.md](windows/codex-switcher/README.md)。启动器会缓存核心脚本 24 小时，GitHub 直连失败时自动走 ghfast 镜像。
+
+## 国内加速
+
+原始地址前面加 `https://ghfast.top/`：
+
+```bash
+bash <(curl -sSL https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/docker/docker-cn.sh)
+```
+
+## 第三方工具
+
+以下不是本仓库维护的。
+
+NodeQuality 服务器检测：
+
+```bash
 bash <(curl -sL https://run.NodeQuality.com)
 ```
-```
-# TcpQuality 服务器检测
+
+TcpQuality 检测：
+
+```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/ibsgss/TcpQuality/main/runTcpQuality.sh)
 ```
-```
-# 阿里云优化版 Debian 13
-curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh
-bash reinstall.sh debian 13
+
+重装 Debian 13：
+
+```bash
+curl -O https://raw.githubusercontent.com/bin456789/reinstall/main/reinstall.sh && bash reinstall.sh debian 13
 ```
 
-```
-#TCP优化 全1回车即可
+TCP 优化（全 1 回车）：
+
+```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/Kylin010/tcpfit/main/tcpfit.sh)
 ```
-

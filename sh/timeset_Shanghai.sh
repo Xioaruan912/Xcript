@@ -1,12 +1,20 @@
-#!/bin/bash
-# 一键设置 Ubuntu 时区为上海
+#!/usr/bin/env bash
+# 该脚本已迁移到新路径：linux/basic/timeset_Shanghai.sh
+# 本文件仅用于兼容旧链接，会自动下载并运行新版本。
+set -uo pipefail
 
-set -e
+NEW_URL="https://raw.githubusercontent.com/Xioaruan912/Xcript/main/linux/basic/timeset_Shanghai.sh"
+TMP="$(mktemp "${TMPDIR:-/tmp}/xcript-redirect-XXXXXX.sh" 2>/dev/null || echo "/tmp/xcript-redirect-$$.sh")"
+trap 'rm -f "$TMP"' EXIT
 
-echo ">>> 设置时区为 Asia/Shanghai ..."
-sudo timedatectl set-timezone Asia/Shanghai
-
-echo ">>> 当前时区："
-timedatectl | grep "Time zone"
-
-echo "✅ 已完成！"
+echo "[*] 脚本已迁移，正在获取新版本：$NEW_URL" >&2
+if command -v curl >/dev/null 2>&1; then
+  curl -fsSL "$NEW_URL" -o "$TMP"
+elif command -v wget >/dev/null 2>&1; then
+  wget -qO "$TMP" "$NEW_URL"
+else
+  echo "需要 curl 或 wget 才能继续。" >&2
+  exit 1
+fi
+chmod +x "$TMP"
+bash "$TMP" "$@"
