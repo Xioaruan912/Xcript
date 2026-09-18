@@ -89,6 +89,18 @@ param(
 
     [switch]$NoRestart,
 
+    [string]$Id,
+
+    [string]$Name,
+
+    [string]$BaseUrl,
+
+    [switch]$Update,
+
+    [switch]$Doctor,
+
+    [switch]$NoCheck,
+
     [switch]$DryRun
 )
 
@@ -122,11 +134,16 @@ $script:ParamApiKey    = $ApiKey
 $script:ParamModel     = $Model
 $script:DryRun         = [bool]$DryRun
 $script:NoRestart      = [bool]$NoRestart
+$script:NoCheck        = [bool]$NoCheck
+$script:Version        = '1.5.0'
+$script:RepoRaw        = 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher'
+$script:VersionCache   = Join-Path $WorkDir 'version.cache'
+$script:BatVersionFile = Join-Path $WorkDir 'bat.version'
 $script:Interactive    = $true
 try { $script:Interactive = -not [Console]::IsInputRedirected } catch { }
 
 $script:ActionMode = [bool]($Switch -or $Status -or $List -or $Restore -or
-    $AddProvider -or $Prune -or $ApiKey -or $Model)
+    $AddProvider -or $Prune -or $ApiKey -or $Model -or $Update -or $Doctor -or $Id -or $BaseUrl)
 if ($script:ActionMode) { $script:Interactive = $false }
 
 # ============================================================
@@ -154,6 +171,11 @@ function Write-Log {
         }
         $line = "{0} {1}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Message
         Add-Content -LiteralPath $LogFile -Value $line -Encoding UTF8
+        # 日志轮转：超过 256KB 只保留最近 500 行
+        if ((Get-Item -LiteralPath $LogFile).Length -gt 262144) {
+            $tail = @(Get-Content -LiteralPath $LogFile -Tail 500)
+            Set-Content -LiteralPath $LogFile -Value $tail -Encoding UTF8
+        }
     }
     catch { }
 }
@@ -188,14 +210,33 @@ function Backup-File {
     if (-not (Test-Path -LiteralPath $Path)) { return $null }
     $backup = "$Path.bak.$(Get-Date -Format 'yyyyMMddHHmmssfff')"
     Copy-Item -LiteralPath $Path -Destination $backup -Force
+    # 备份的修改时间应为“备份时刻”，而不是源文件的旧时间
+    try { (Get-Item -LiteralPath $backup).LastWriteTime = Get-Date } catch { }
     return $backup
 }
 
+function Test-BackupName {
+    # 只认本工具生成的备份：config.toml.bak.<时间戳> / config.<id>.toml.bak.<时间戳>
+    param([string]$Name)
+    return [bool]($Name -match '^config(\.[A-Za-z0-9_-]+)?\.toml\.bak\.\d{12,}$')
+}
+
+function Get-BackupStamp {
+    # 用文件名里的时间戳排序；Copy-Item 会保留源文件的修改时间，按 mtime 排序不可靠
+    param([string]$Name)
+    if ($Name -match '\.bak\.(\d+)$') { return [long]$Matches[1] }
+    return [long]0
+}
+
 function Get-BackupFiles {
+    param([string]$Base)
     $all = Get-ChildItem -LiteralPath $CodexHome -File -ErrorAction SilentlyContinue
-    return @($all |
-        Where-Object { $_.Name -match '\.bak(\.|$)' } |
-        Sort-Object LastWriteTime -Descending)
+    $list = @($all | Where-Object { Test-BackupName $_.Name })
+    if ($Base) {
+        $prefix = "$Base.bak."
+        $list = @($list | Where-Object { $_.Name.StartsWith($prefix, [System.StringComparison]::OrdinalIgnoreCase) })
+    }
+    return @($list | Sort-Object { Get-BackupStamp $_.Name } -Descending)
 }
 
 function Get-BackupGroupKey {
@@ -210,7 +251,7 @@ function Remove-OldBackups {
     $files |
         Group-Object { Get-BackupGroupKey $_.Name } |
         ForEach-Object {
-            $group = @($_.Group | Sort-Object LastWriteTime -Descending)
+            $group = @($_.Group | Sort-Object { Get-BackupStamp $_.Name } -Descending)
             if ($group.Count -gt $KeepCount) {
                 $group | Select-Object -Skip $KeepCount | ForEach-Object {
                     $removed += $_.FullName
@@ -224,19 +265,22 @@ function Remove-OldBackups {
 }
 
 function Protect-SensitiveFiles {
-    $me = $null
-    try { $me = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name } catch { }
-    if (-not $me) { return }
+    # 用 SID 授权，避免非英文系统上 "Administrators"/"SYSTEM" 名称解析失败
+    $ownerSid = $null
+    try { $ownerSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value } catch { }
+    if (-not $ownerSid) { return }
 
     $targets = @()
     $targets += Get-BackupFiles | Select-Object -ExpandProperty FullName
-    foreach ($name in @('config.toml', 'config.openai.toml', 'config.go.toml', 'config.deepseek.toml')) {
-        $p = Join-Path $CodexHome $name
-        if (Test-Path -LiteralPath $p) { $targets += $p }
+    $targets += Join-Path $CodexHome 'config.toml'
+    foreach ($f in @(Get-ChildItem -LiteralPath $CodexHome -Filter 'config.*.toml' -File -ErrorAction SilentlyContinue)) {
+        if (-not (Test-BackupName $f.Name)) { $targets += $f.FullName }
     }
+    $targets = @($targets | Where-Object { $_ -and (Test-Path -LiteralPath $_) } | Select-Object -Unique)
+
     foreach ($p in $targets) {
         try {
-            & icacls "$p" /inheritance:r /grant:r "${me}:(F)" "SYSTEM:(F)" "Administrators:(F)" 2>$null | Out-Null
+            & icacls "$p" /inheritance:r /grant:r "*${ownerSid}:(F)" "*S-1-5-18:(F)" "*S-1-5-32-544:(F)" 2>$null | Out-Null
         }
         catch { }
     }
@@ -367,6 +411,7 @@ function Get-DiscoveredProviders {
         if ($f.Name -match '\.bak(\.|$)') { continue }
         if ($known -contains $f.Name.ToLowerInvariant()) { continue }
         if ($f.Name -ieq 'config.toml') { continue }
+        if ($f.Name -ieq 'config.last.toml') { continue }
         $id = $f.Name
         $id = $id -replace '^config\.', ''
         $id = $id -replace '\.toml$', ''
@@ -422,6 +467,9 @@ function Get-ProviderByInfo {
 function Get-ConfigProviderInfo {
     param([string]$Path)
     if (-not (Test-Path -LiteralPath $Path)) { return $null }
+    # 只解析 Codex 配置文件/其备份，避免把 models.json、global-state 等误判为 openai
+    $leaf = Split-Path -Leaf $Path
+    if ($leaf -notmatch '^config(\.[A-Za-z0-9_-]+)?\.toml(\.bak\.\d+)?$') { return $null }
     $text = Get-Content -LiteralPath $Path -Raw -Encoding UTF8
     if (-not $text) { $text = '' }
 
@@ -462,7 +510,9 @@ function Recover-Template {
 
     $active = Get-ActiveProvider
     if ($active -and $active.Id -ieq $Provider.Id -and (Test-Path -LiteralPath $ActiveConfig)) {
-        if (-not $script:DryRun) { Copy-Item -LiteralPath $ActiveConfig -Destination $template -Force }
+        $overlay = Get-ProviderOverlay -Text (Get-Content -LiteralPath $ActiveConfig -Raw -Encoding UTF8)
+        if (-not "$overlay".Trim()) { $overlay = New-ProviderContent -Provider $Provider -Key '' -ModelName '' }
+        if (-not $script:DryRun) { Write-TextAtomic -Path $template -Content $overlay }
         Write-Ok "已从当前配置保存 $($Provider.Name) 模板 -> $template"
         return $true
     }
@@ -473,7 +523,9 @@ function Recover-Template {
     } | Select-Object -First 1
 
     if ($candidate) {
-        if (-not $script:DryRun) { Copy-Item -LiteralPath $candidate.FullName -Destination $template -Force }
+        $overlay = Get-ProviderOverlay -Text (Get-Content -LiteralPath $candidate.FullName -Raw -Encoding UTF8)
+        if (-not "$overlay".Trim()) { $overlay = New-ProviderContent -Provider $Provider -Key '' -ModelName '' }
+        if (-not $script:DryRun) { Write-TextAtomic -Path $template -Content $overlay }
         Write-Ok "已从备份 $($candidate.Name) 恢复 $($Provider.Name) 模板"
         return $true
     }
@@ -582,7 +634,7 @@ function Get-ProviderModels {
     $bases = @($Provider.BaseUrl.TrimEnd('/'))
     # 部分中转站 /models 不在 /v1 前缀下，做启发式回退
     if ($bases[0] -match '/v\d+$') { $bases += ($bases[0] -replace '/v\d+$', '') }
-    $bases += ($bases[0] + '/v1')
+    else { $bases += ($bases[0] + '/v1') }
 
     $headers = @{ 'Accept' = 'application/json' }
     if ($Key) { $headers['Authorization'] = "Bearer $Key" }
@@ -617,7 +669,15 @@ function Get-ModelForProvider {
     if ($existing) { $default = $existing }
     elseif ($Provider.DefaultModel) { $default = $Provider.DefaultModel }
 
-    if (-not $script:Interactive) { return $default }
+    if (-not $script:Interactive) {
+        if ($default) { return $default }
+        if ($Provider.BaseUrl) {
+            # 非交互且没给模型时，自动探测并取第一个
+            $auto = Get-ProviderModels -Provider $Provider -Key $Key
+            if ($auto -and $auto.Count) { return $auto[0] }
+        }
+        return $default
+    }
 
     $discovered = $null
     if ($Provider.BaseUrl) {
@@ -696,6 +756,103 @@ wire_api = "responses"
 experimental_bearer_token = "$(ConvertTo-TomlString $Key)"
 "@
     return $content
+}
+
+# ============================================================
+# TOML 合并（保留基底配置，仅替换 provider 相关字段）
+# ============================================================
+function ConvertTo-TomlLayout {
+    param([string]$Text)
+    $top = New-Object System.Collections.ArrayList
+    $sections = New-Object System.Collections.ArrayList
+    $current = $null
+    if ($Text) {
+        foreach ($line in ($Text -split "`r?`n")) {
+            if ($line -match '^\s*\[\[?[^\]]+\]\]?\s*(#.*)?$') {
+                $current = [pscustomobject]@{
+                    Header = $line.TrimEnd()
+                    Lines  = (New-Object System.Collections.ArrayList)
+                }
+                [void]$sections.Add($current)
+            }
+            elseif ($null -eq $current) { [void]$top.Add($line.TrimEnd()) }
+            else { [void]$current.Lines.Add($line.TrimEnd()) }
+        }
+    }
+    return [pscustomobject]@{ Top = $top; Sections = $sections }
+}
+
+function Get-ProviderOverlay {
+    # 从任意配置文件中提取“provider 覆盖层”：model* 顶层键 + [model_providers.*] 段
+    param([string]$Text)
+    $layout = ConvertTo-TomlLayout -Text $Text
+    $keep = @('model', 'model_provider', 'model_reasoning_effort', 'model_reasoning_summary',
+        'model_verbosity', 'model_supports_reasoning_summaries')
+    $out = New-Object System.Collections.ArrayList
+    foreach ($line in $layout.Top) {
+        if ($line -match '^\s*([A-Za-z0-9_.-]+)\s*=') {
+            if ($keep -contains $Matches[1].ToLowerInvariant()) { [void]$out.Add($line) }
+        }
+    }
+    foreach ($s in $layout.Sections) {
+        if ($s.Header -match '^\s*\[\[?\s*model_providers\.') {
+            [void]$out.Add($s.Header)
+            foreach ($l in $s.Lines) { [void]$out.Add($l) }
+        }
+    }
+    return (($out -join "`r`n").Trim() + "`r`n")
+}
+
+function Merge-ProviderConfig {
+    # 用覆盖层替换基底里的 provider 字段，其余设置原样保留
+    param([string]$BaseText, [string]$OverlayText)
+    $overlay = Get-ProviderOverlay -Text $OverlayText
+    $base = ConvertTo-TomlLayout -Text $BaseText
+    $over = ConvertTo-TomlLayout -Text $overlay
+
+    # 无论如何都清掉基底里的 provider 选择/调优键，避免残留上一个提供商的设置
+    $providerKeys = @('model', 'model_provider', 'model_reasoning_effort', 'model_reasoning_summary',
+        'model_verbosity', 'model_supports_reasoning_summaries')
+    $result = New-Object System.Collections.ArrayList
+
+    foreach ($line in $base.Top) {
+        $key = $null
+        if ($line -match '^\s*([A-Za-z0-9_.-]+)\s*=') { $key = $Matches[1].ToLowerInvariant() }
+        if ($key -and ($providerKeys -contains $key)) { continue }
+        [void]$result.Add($line)
+    }
+    foreach ($line in $over.Top) { [void]$result.Add($line) }
+
+    if ($result.Count -gt 0 -and "$($result[$result.Count - 1])".Trim()) { [void]$result.Add('') }
+
+    foreach ($s in $base.Sections) {
+        if ($s.Header -match '^\s*\[\[?\s*model_providers\.') { continue }
+        [void]$result.Add($s.Header)
+        foreach ($l in $s.Lines) { [void]$result.Add($l) }
+    }
+    foreach ($s in $over.Sections) {
+        [void]$result.Add($s.Header)
+        foreach ($l in $s.Lines) { [void]$result.Add($l) }
+    }
+    return (($result -join "`r`n").TrimEnd() + "`r`n")
+}
+
+function Test-TomlBasic {
+    # 轻量校验：非空 + 不出现重复表头（合并最容易出的错）
+    param([string]$Text)
+    if (-not "$Text".Trim()) { return $false }
+    $seen = @{}
+    foreach ($line in ($Text -split "`r?`n")) {
+        $t = $line.Trim()
+        if (-not $t -or $t.StartsWith('#')) { continue }
+        if ($t -match '^\[\[.*\]\]$') { continue }
+        if ($t -match '^\[(.*)\]$') {
+            $h = $Matches[1].Trim().ToLowerInvariant()
+            if ($seen.ContainsKey($h)) { return $false }
+            $seen[$h] = $true
+        }
+    }
+    return $true
 }
 
 function Configure-Provider {
@@ -833,6 +990,41 @@ function Restart-ChatGPTDesktop {
     Write-Warn "配置已切换，但未能自动启动 ChatGPT 桌面端，请手动打开。"
 }
 
+function Confirm-ConfigApplied {
+    # 重启后检查 config.toml 是否被桌面端改写，并按需重应用
+    param([string]$Expected, $Provider)
+    if ($script:DryRun -or $script:NoRestart) { return }
+
+    Start-Sleep -Milliseconds 1500
+    $now = ''
+    if (Test-Path -LiteralPath $ActiveConfig) {
+        $now = Get-Content -LiteralPath $ActiveConfig -Raw -Encoding UTF8
+    }
+    if (-not $now) { return }
+
+    $normNow = ($now -replace "`r`n", "`n").Trim()
+    $normExp = ($Expected -replace "`r`n", "`n").Trim()
+    if ($normNow -ne $normExp) {
+        Write-Warn "检测到 config.toml 在重启后被改写（可能是 ChatGPT 桌面端）。"
+        Write-Log "config.toml overwritten after restart"
+        if ($script:Interactive) {
+            $again = Read-Answer "是否重新应用本次切换？[Y/n]" 'y'
+            if (-not $again -or $again.ToLowerInvariant() -eq 'y') {
+                Write-TextAtomic -Path $ActiveConfig -Content $Expected
+                Write-Ok "已重新应用。"
+            }
+        }
+        else {
+            Write-Dim "非交互模式已跳过自动重应用；可重新运行 -Switch 再试。"
+        }
+    }
+
+    if ($Provider.NeedsCatalog -and -not (Test-Path -LiteralPath $ModelsJson)) {
+        Write-Warn "模型目录 models.json 缺失，尝试重新写入。"
+        Set-ProviderCatalog -Provider $Provider
+    }
+}
+
 function Switch-Provider {
     param($Provider)
 
@@ -844,15 +1036,42 @@ function Switch-Provider {
         if (-not (Configure-Provider -Provider $Provider)) { return $false }
     }
 
+    if (Test-Path -LiteralPath $template) {
+        $overlayText = Get-Content -LiteralPath $template -Raw -Encoding UTF8
+    }
+    elseif ($script:DryRun) {
+        # DryRun 下配置向导不会落盘，这里用即时生成的覆盖层演示
+        $dryKey = if ($script:ParamApiKey) { $script:ParamApiKey } else { 'dry-run' }
+        $dryModel = if ($script:ParamModel) { $script:ParamModel } elseif ($Provider.DefaultModel) { $Provider.DefaultModel } else { '' }
+        $overlayText = New-ProviderContent -Provider $Provider -Key $dryKey -ModelName $dryModel
+    }
+    else {
+        Write-Err "无法生成 $($Provider.Name) 模板：$template"
+        return $false
+    }
+    if (-not "$overlayText".Trim()) { Write-Err "模板内容为空：$template"; return $false }
+
+    $baseText = ''
+    if (Test-Path -LiteralPath $ActiveConfig) {
+        $baseText = Get-Content -LiteralPath $ActiveConfig -Raw -Encoding UTF8
+    }
+    # 合并：只替换 provider 相关字段，保留 plugins / mcp_servers / projects 等设置
+    $merged = Merge-ProviderConfig -BaseText $baseText -OverlayText $overlayText
+    if (-not (Test-TomlBasic -Text $merged)) {
+        Write-Err "合并后的配置未通过基本校验，已取消（原配置未改动）。"
+        return $false
+    }
+
     if ($script:DryRun) {
-        Write-Info "[DryRun] 将把 $template 写入 $ActiveConfig"
+        Write-Info "[DryRun] 将把合并后的配置写入 $ActiveConfig"
+        Write-Dim $merged
         return $true
     }
 
     $backup = Backup-File -Path $ActiveConfig
     if ($backup) { Write-Dim "已备份当前配置 -> $backup" }
 
-    Copy-Atomic -Source $template -Destination $ActiveConfig
+    Write-TextAtomic -Path $ActiveConfig -Content $merged
     Set-ProviderCatalog -Provider $Provider
     [void](Remove-OldBackups -KeepCount $Keep)
     Protect-SensitiveFiles
@@ -864,6 +1083,7 @@ function Switch-Provider {
     Write-Log "switched to provider=$($Provider.Id) model=$model"
 
     Restart-ChatGPTDesktop
+    Confirm-ConfigApplied -Expected $merged -Provider $Provider
     return $true
 }
 
@@ -949,8 +1169,8 @@ function Remove-CustomProviderInteractive {
 # 备份管理
 # ============================================================
 function Show-BackupList {
-    $backups = Get-BackupFiles
-    if (-not $backups.Count) { Write-Warn "没有找到备份文件。"; return @() }
+    $backups = @(Get-BackupFiles -Base 'config.toml')
+    if (-not $backups.Count) { Write-Warn "没有找到可恢复的 config.toml 备份。"; return @() }
 
     Write-Head "备份列表（共 $($backups.Count) 份）"
     for ($i = 0; $i -lt $backups.Count; $i++) {
@@ -968,7 +1188,8 @@ function Show-BackupList {
 
 function Restore-Backup {
     param([string]$Selector)
-    $backups = @(Get-BackupFiles)
+    # 只恢复 config.toml 的备份，绝不碰模板备份或其它 .bak 文件
+    $backups = @(Get-BackupFiles -Base 'config.toml')
     if (-not $backups.Count) { Write-Err "没有可用备份。"; return $false }
 
     $file = $null
@@ -1309,9 +1530,165 @@ $script:DeepseekModelsJson = @'
 '@
 
 # ============================================================
+# 版本检查 / 自更新
+# ============================================================
+function Get-VersionMapFromText {
+    param([string]$Text)
+    $map = @{}
+    foreach ($l in ("$Text" -split "`r?`n")) {
+        if ($l -match '^\s*(bat|ps1)\s*=\s*(.+?)\s*$') { $map[$Matches[1]] = $Matches[2] }
+    }
+    return $map
+}
+
+function Get-RemoteVersionMap {
+    param([switch]$Force)
+    if (-not $Force -and (Test-Path -LiteralPath $script:VersionCache)) {
+        try {
+            $age = ((Get-Date) - (Get-Item -LiteralPath $script:VersionCache).LastWriteTime).TotalHours
+            if ($age -lt 24) {
+                return (Get-VersionMapFromText -Text (Get-Content -LiteralPath $script:VersionCache -Raw -Encoding UTF8))
+            }
+        }
+        catch { }
+    }
+    $urls = @("$($script:RepoRaw)/version.txt", "https://ghfast.top/$($script:RepoRaw)/version.txt")
+    foreach ($u in $urls) {
+        try {
+            $text = (Invoke-WebRequest -UseBasicParsing -Uri $u -TimeoutSec 8).Content
+            if ($text) {
+                try {
+                    if (-not (Test-Path -LiteralPath $WorkDir)) { New-Item -ItemType Directory -Path $WorkDir -Force | Out-Null }
+                    Write-TextAtomic -Path $script:VersionCache -Content $text
+                }
+                catch { }
+                return (Get-VersionMapFromText -Text $text)
+            }
+        }
+        catch { }
+    }
+    return $null
+}
+
+function Get-LocalBatVersion {
+    if (Test-Path -LiteralPath $script:BatVersionFile) {
+        try { return (Get-Content -LiteralPath $script:BatVersionFile -Raw -Encoding UTF8).Trim() } catch { }
+    }
+    return ''
+}
+
+function Invoke-AutoUpdate {
+    # 只做轻量版本探测；版本一致时零下载
+    param([switch]$Force)
+    if ($script:DryRun -or $script:NoCheck) { return }
+
+    $map = Get-RemoteVersionMap -Force:$Force
+    if (-not $map) {
+        if ($Force) { Write-Warn "无法获取远端版本信息（网络/代理？）。" }
+        return
+    }
+
+    $remotePs1 = "$($map['ps1'])".Trim()
+    $remoteBat = "$($map['bat'])".Trim()
+    $updated = $false
+
+    if ($Force) {
+        Write-Host "本地脚本版本：$($script:Version)"
+        if ($remotePs1) { Write-Host "远端脚本版本：$remotePs1" }
+        if ($remoteBat) { Write-Host "远端启动器版本：$remoteBat" }
+    }
+
+    if ($remotePs1 -and $remotePs1 -ne $script:Version -and $PSCommandPath) {
+        $tmp = Join-Path $WorkDir 'codex-switcher.update.ps1'
+        $urls = @("$($script:RepoRaw)/codex-switcher.ps1", "https://ghfast.top/$($script:RepoRaw)/codex-switcher.ps1")
+        foreach ($u in $urls) {
+            try {
+                Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $tmp -TimeoutSec 60
+                if ((Get-Item -LiteralPath $tmp).Length -gt 200) {
+                    Copy-Item -LiteralPath $tmp -Destination $PSCommandPath -Force
+                    Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+                    Write-Ok "核心脚本已更新到 $remotePs1（本次仍用旧版，下次运行生效）。"
+                    $script:Version = $remotePs1
+                    $updated = $true
+                    break
+                }
+            }
+            catch { }
+        }
+    }
+
+    $localBat = Get-LocalBatVersion
+    if ($remoteBat -and $remoteBat -ne $localBat) {
+        $tmp = Join-Path $WorkDir 'codex.bat.update'
+        $urls = @("$($script:RepoRaw)/codex.bat", "https://ghfast.top/$($script:RepoRaw)/codex.bat")
+        foreach ($u in $urls) {
+            try {
+                Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $tmp -TimeoutSec 60
+                $txt = Get-Content -LiteralPath $tmp -Raw -ErrorAction SilentlyContinue
+                if ($txt -and $txt -match 'LOCAL_BAT_VERSION' -and $txt -match 'codex-switcher') {
+                    Copy-Item -LiteralPath $tmp -Destination (Join-Path $WorkDir 'codex.bat') -Force
+                    Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+                    try { Write-TextAtomic -Path $script:BatVersionFile -Content "$remoteBat`r`n" } catch { }
+                    Write-Ok "启动器已更新到 $remoteBat。"
+                    $updated = $true
+                    break
+                }
+                Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+            }
+            catch { }
+        }
+    }
+
+    if (-not $updated -and $Force) { Write-Ok "已是最新版本。" }
+}
+
+function Invoke-Doctor {
+    Write-Head "环境自检"
+    Write-Host "脚本版本：$($script:Version)"
+    Write-Host "PowerShell：$($PSVersionTable.PSVersion)"
+    Write-Host "配置目录：$CodexHome"
+    if (Test-Path -LiteralPath $CodexHome) { Write-Ok "  目录存在" } else { Write-Err "  目录不存在" }
+
+    try {
+        $probe = Join-Path $CodexHome ".codex-switcher.write-test.$PID"
+        [System.IO.File]::WriteAllText($probe, 'ok')
+        Remove-Item -LiteralPath $probe -Force
+        Write-Ok "  目录可写"
+    }
+    catch { Write-Err "  目录不可写：$($_.Exception.Message)" }
+
+    if (Test-Path -LiteralPath $ActiveConfig) {
+        $active = Get-ActiveProvider
+        $who = if ($active) { $active.Name } else { '未识别' }
+        $model = Get-TomlValue -Path $ActiveConfig -Key 'model'
+        $suffix = ''
+        if ($model) { $suffix = "（模型 $model）" }
+        Write-Host "当前配置：$who$suffix"
+    }
+    else { Write-Warn "当前没有 config.toml" }
+
+    $backups = @(Get-BackupFiles -Base 'config.toml')
+    Write-Host "可恢复备份：$($backups.Count) 份"
+
+    $map = Get-RemoteVersionMap -Force
+    if ($map) {
+        Write-Host "远端脚本版本：$($map['ps1'])"
+        Write-Host "远端启动器版本：$($map['bat'])"
+        if ($map['ps1'] -and $map['ps1'] -ne $script:Version) { Write-Warn "  有可用的脚本更新" }
+        elseif ($map['ps1']) { Write-Ok "  脚本已是最新" }
+    }
+    else { Write-Warn "无法获取远端版本（网络/代理？）" }
+    Write-Host ""
+}
+
+# ============================================================
 # 主流程
 # ============================================================
 function Invoke-Main {
+    if ($Update) { Invoke-AutoUpdate -Force; return 0 }
+    if ($Doctor) { Invoke-Doctor; return 0 }
+    if ($script:Interactive -and -not $script:DryRun) { Invoke-AutoUpdate }
+
     Initialize-Templates
 
     if ($Status) { Show-Status; return 0 }
@@ -1330,8 +1707,20 @@ function Invoke-Main {
     }
 
     if ($AddProvider) {
-        Write-Err "非交互添加请使用交互菜单 [A]，或先看 README。"
-        return 1
+        if (-not $Id -or -not $BaseUrl) {
+            Write-Err "非交互添加需要 -Id 和 -BaseUrl（可选 -Name / -ApiKey / -Model）。"
+            return 1
+        }
+        $newId = $Id.ToLowerInvariant()
+        if (-not (Test-ProviderIdValid -Id $newId)) { return 1 }
+        $display = if ($Name) { $Name } else { $newId }
+        $provider = New-ProviderObject -Id $newId -File "config.$newId.toml" -Name $display `
+            -ProviderId $newId -BaseUrl $BaseUrl -DefaultModel '' -Builtin $false `
+            -NeedsCatalog $false -Description '自定义提供商'
+        if (-not (Configure-Provider -Provider $provider)) { return 1 }
+        Save-CustomProvider -Provider $provider
+        Write-Ok "已添加自定义提供商：$display"
+        return 0
     }
 
     if ($Switch) {

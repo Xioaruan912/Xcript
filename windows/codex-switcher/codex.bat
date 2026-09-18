@@ -16,6 +16,9 @@ REM ==========================================
 REM Config
 REM ==========================================
 
+REM Launcher version (keep in sync with version.txt bat=)
+set "LOCAL_BAT_VERSION=1.5.0"
+
 set "PS1_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex-switcher.ps1"
 set "MIRROR_PREFIX=https://ghfast.top/"
 
@@ -57,6 +60,7 @@ echo ==========================================
 echo          Codex Switcher Launcher
 echo ==========================================
 echo.
+echo Version  : %LOCAL_BAT_VERSION%
 echo Work dir : %WORK_DIR%
 echo Script   : %PS1_FILE%
 echo Cache TTL: %CACHE_HOURS% hours
@@ -68,6 +72,9 @@ REM ==========================================
 
 if not exist "%WORK_DIR%" mkdir "%WORK_DIR%" >nul 2>&1
 if not exist "%WORK_DIR%" goto DIR_FAILED
+
+REM Record launcher version so the core script can detect updates
+> "%WORK_DIR%\bat.version" echo %LOCAL_BAT_VERSION%
 
 REM ==========================================
 REM Check Windows PowerShell
@@ -95,7 +102,7 @@ REM ==========================================
 
 if not exist "%PS1_FILE%" goto CACHE_MISSING
 
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; try { $item=Get-Item -LiteralPath $env:PS1_FILE; if ($item.Length -lt 10) { exit 2 }; $age=((Get-Date)-$item.LastWriteTime).TotalHours; if ($age -ge [double]$env:CACHE_HOURS) { exit 0 } else { exit 1 } } catch { exit 2 }"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; try { $item=Get-Item -LiteralPath $env:PS1_FILE; if ($item.Length -lt 200) { exit 2 }; $c=Get-Content -LiteralPath $env:PS1_FILE -Raw; if ($c -notmatch 'Invoke-Main') { exit 2 }; $age=((Get-Date)-$item.LastWriteTime).TotalHours; if ($age -ge [double]$env:CACHE_HOURS) { exit 0 } else { exit 1 } } catch { exit 2 }"
 
 set "CACHE_STATE=%ERRORLEVEL%"
 
@@ -158,7 +165,7 @@ goto DOWNLOAD_FAILED
 :DOWNLOAD_ONE
 REM arg %1 = full URL
 set "PS1_URL_ONE=%~1"
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -UseBasicParsing -Uri $env:PS1_URL_ONE -OutFile $env:PS1_TEMP; if ((Get-Item -LiteralPath $env:PS1_TEMP).Length -lt 10) { throw 'Downloaded script is empty' }" 1>nul 2>nul
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -UseBasicParsing -Uri $env:PS1_URL_ONE -OutFile $env:PS1_TEMP; if ((Get-Item -LiteralPath $env:PS1_TEMP).Length -lt 200) { throw 'Downloaded script is too small' }; $c=Get-Content -LiteralPath $env:PS1_TEMP -Raw; if ($c -notmatch 'Invoke-Main') { throw 'Downloaded file is not the Codex Switcher core script' }" 1>nul 2>nul
 exit /b %ERRORLEVEL%
 
 :DOWNLOAD_OK

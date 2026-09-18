@@ -2,12 +2,26 @@
 
 Windows 下切换 Codex 的配置，支持官方 OpenAI、OpenCode Go、DeepSeek 官方和自定义中转站。
 
-Codex CLI、ChatGPT 桌面端、VS Code 扩展共用 `%USERPROFILE%\.codex\config.toml`。这个工具就是替换这个文件，并在切换后按需重启 ChatGPT 桌面端。
+> [!IMPORTANT]
+> 旧路径 `win/Codex_switcher/` 已废弃，旧链接会 404。请使用本目录（`windows/codex-switcher/`）的最新地址，旧地址下不提供转发。
+
+Codex CLI、ChatGPT 桌面端、VS Code 扩展共用 `%USERPROFILE%\.codex\config.toml`。切换时只替换里面的 `model`、`model_provider` 和 `[model_providers.*]`，其余设置（`[plugins]`、`[mcp_servers]`、`[projects]`、`[desktop]` 等）原样保留，并在切换后按需重启 ChatGPT 桌面端。
 
 ## 文件
 
-- `codex.bat`：启动器。从 GitHub 下载核心脚本并本地缓存 24 小时；下载失败时用旧缓存，直连失败时自动走 ghfast 镜像。最后运行核心脚本。
+- `codex.bat`：启动器。从 GitHub 下载核心脚本并本地缓存 24 小时；下载后会校验内容（必须是核心脚本而不是 404 页面），失败时用旧缓存，直连失败时自动走 ghfast 镜像。最后运行核心脚本。
 - `codex-switcher.ps1`：核心脚本，菜单、切换、备份、模型探测等逻辑都在这里。
+- `version.txt`：版本号（`bat=` 启动器版本，`ps1=` 核心脚本版本），供启动器和脚本做轻量更新探测。
+
+## 更新机制
+
+每次运行都会做一次**极小**的版本探测（只取 `version.txt`，几十字节，2 秒超时，结果缓存 24 小时）：
+
+- 远端版本与本地一致 → **不下载任何东西**，直接用本地缓存。
+- 有新版 → 才下载对应的 `codex-switcher.ps1`（核心脚本）和 / 或 `codex.bat`（启动器）。
+- 离线 / 取版本失败 → 直接跳过，照常运行，绝不阻塞。
+
+`codex.bat -force` 会忽略缓存重新拉取核心脚本；`codex-switcher.ps1 -Update` 强制探测并刷新；`-Doctor` 可查看本地/远端版本与更新状态。
 
 编码约定：
 
@@ -106,18 +120,28 @@ experimental_bearer_token = "sk-xxxx"
 | `-NoRestart` | 切换后不重启 ChatGPT 桌面端 |
 | `-DryRun` | 只显示要做什么，不改文件 |
 | `-ApiKey` / `-Model` | 非交互配置时提供的 Key 和模型 |
+| `-AddProvider -Id -Name -BaseUrl` | 非交互添加自定义提供商（配合 `-ApiKey` / `-Model`） |
+| `-Update` | 强制做一次版本探测，有更新就刷新 |
+| `-Doctor` | 环境自检（版本、目录、写权限、远端版本） |
+| `-NoCheck` | 跳过启动时的版本探测 |
 
 ```powershell
 .\codex-switcher.ps1 -Switch go -ApiKey sk-xxxx -Model deepseek-v4-flash -NoRestart
 .\codex-switcher.ps1 -Status
 .\codex-switcher.ps1 -Restore latest
+.\codex-switcher.ps1 -AddProvider -Id myrelay -Name "我的中转站" -BaseUrl https://relay.example.com/v1 -ApiKey sk-xxxx -Model gpt-5.5
+.\codex-switcher.ps1 -Doctor
 ```
 
 也可以不传 `-ApiKey`，改成设环境变量：`OPENCODE_GO_API_KEY`、`DEEPSEEK_API_KEY`、`OPENAI_API_KEY`。
 
 ## 备份与安全
 
-每次覆盖 `config.toml` 前都会生成带时间戳的备份 `config.toml.bak.yyyyMMddHHmmssfff`。默认只保留最近 10 份，避免备份堆积，可以用 `-Keep` 或菜单 `[B]` 改。写完会尽量收紧权限，移除继承、只留当前用户和 SYSTEM。
+每次覆盖 `config.toml` 前都会生成带时间戳的备份 `config.toml.bak.yyyyMMddHHmmssfff`。默认只保留最近 10 份，避免备份堆积，可以用 `-Keep` 或菜单 `[B]` 改。
+
+备份按**文件名里的时间戳**排序，只识别本工具生成的 `config*.toml.bak.<时间戳>`。`~/.codex` 下其它 `.bak` 文件（例如 `.codex-global-state.json.bak`）不会被列出、不会被清理，更不会被当成备份恢复回 `config.toml`。
+
+写完会尽量收紧权限：用 SID 授权（当前用户、SYSTEM、Administrators），避免非英文系统上组名解析失败。切换并重启桌面端后会复查 `config.toml`，若检测到被桌面端改写会提示并可一键重新应用。
 
 API Key 是明文存在模板文件里的（内联 `experimental_bearer_token`），别把 `config.*.toml` 和 `*.bak.*` 发给别人。
 
@@ -126,9 +150,12 @@ API Key 是明文存在模板文件里的（内联 `experimental_bearer_token`�
 | 现象 | 处理 |
 | --- | --- |
 | 中文乱码 | 确认 `codex-switcher.ps1` 是 UTF-8 带 BOM，`codex.bat` 保持纯 ASCII |
+| `Invoke-WebRequest : 404` / 下载失败 | 多半是在用旧路径的旧启动器（`win/Codex_switcher/`），按 README 顶部重新获取新地址的 `codex.bat` |
 | 下载失败 | 直连失败会自动试 ghfast 镜像，也可以 `codex.bat -force` 手动刷新 |
 | `wire_api` 报错 | 提供商要支持 Responses API，`chat` 已不支持 |
-| 切换后没生效 | 正在跑的 CLI / IDE 会话要重启才会读新配置 |
+| 切换后没生效 | 正在跑的 CLI / IDE 会话要重启才会读新配置；若桌面端改回了 `config.toml`，按提示重新应用 |
+| 切换后设置被清空 | 1.5.0+ 只替换 provider 字段，会保留其它设置；旧版本请更新 |
+| 恢复后 Codex 报 TOML 错 | 旧版本可能把无关 `.bak` 当备份恢复；1.5.0+ 只认 `config.toml` 的备份，请在菜单 `[B]` 里选正确的备份 |
 | 想回退 | 菜单 `[B]` 或 `-Restore latest` |
 
 ## 调试
