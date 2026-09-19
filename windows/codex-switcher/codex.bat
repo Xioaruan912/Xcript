@@ -125,27 +125,72 @@ goto CACHE_DONE
 set "CACHE_VALID=1"
 
 REM Quick version compare: if the cached core script is older than the
-REM remote version.txt, refresh it. Network failure is ignored (stay offline).
+REM remote version.txt, refresh it. Any network failure keeps the cache.
 echo [cache] Verifying cached version (quick) ...
-set "LOCAL_PS1_VER="
-set "VER_BEHIND=0"
-set "VERSION_PROBE=%TEMP%\codex-switcher-version.probe"
-if exist "%VERSION_PROBE%" del /f /q "%VERSION_PROBE%" >nul 2>&1
-set "CODE_SWITCHER_PROXY_PORT=%PROXY_PORT%"
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='SilentlyContinue'; $ProgressPreference='SilentlyContinue'; function Test-Tcp([int]$p){ if($p -lt 1 -or $p -gt 65535){return $false}; try{ $c=New-Object Net.Sockets.TcpClient; $iar=$c.BeginConnect('127.0.0.1',$p,$null,$null); if($iar.AsyncWaitHandle.WaitOne(300)){ $c.EndConnect($iar); $c.Close(); return $true }; $c.Close() }catch{}; return $false }; function Test-Proxy([int]$p){ if(-not (Test-Tcp $p)){return $false}; try{ $r=Invoke-WebRequest -UseBasicParsing -Method Head -Uri 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt' -Proxy ('http://127.0.0.1:'+$p) -TimeoutSec 5; return ($r.StatusCode -ge 200 -and $r.StatusCode -lt 400) }catch{ return $false } }; $proxy=''; if(Test-Proxy 7897){$proxy=7897} elseif(Test-Proxy 7890){$proxy=7890}; $local=''; try{ $c=Get-Content -LiteralPath $env:PS1_FILE -Raw; if($c -match \"\`$script:Version\s*=\s*'([^']+)'\"){ $local=$Matches[1] } }catch{}; $remote=''; $targets=@(); if($proxy){ $targets += @{u='https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt';p=('http://127.0.0.1:'+$proxy)} }; $targets += @{u='https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt';p=''}; $targets += @{u='https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt';p=''}; foreach($t in $targets){ try{ $a=@{UseBasicParsing=$true;Uri=$t.u;TimeoutSec=6}; if($t.p){$a.Proxy=$t.p}; $txt=(Invoke-WebRequest @a).Content; if($txt -match '(?m)^ps1=(\S+)'){ $remote=$Matches[1]; break } }catch{} }; if($remote -and $local -and ($remote -ne $local)){ Set-Content -LiteralPath $env:VERSION_PROBE -Value $remote -Encoding ASCII } elseif($remote -and -not $local){ } else { }"
+call :READ_LOCAL_PS1_VER
+set "REMOTE_VER_FILE=%TEMP%\codex-switcher-remote-ver.txt"
+if exist "%REMOTE_VER_FILE%" del /f /q "%REMOTE_VER_FILE%" >nul 2>&1
+call :FETCH_REMOTE_VER
 
-if exist "%VERSION_PROBE%" (
-    set /p REMOTE_VER=<"%VERSION_PROBE%"
-    del /f /q "%VERSION_PROBE%" >nul 2>&1
-    echo [cache] Cached script is outdated (remote %REMOTE_VER%), refreshing.
-    echo.
-    set "NEED_DOWNLOAD=1"
-    goto CACHE_DONE
+if not "%LOCAL_PS1_VER%"=="" (
+    if not "%REMOTE_PS1_VER%"=="" (
+        if not "%LOCAL_PS1_VER%"=="%REMOTE_PS1_VER%" (
+            echo [cache] Cached script %LOCAL_PS1_VER% is older than remote %REMOTE_PS1_VER%, refreshing.
+            echo.
+            set "NEED_DOWNLOAD=1"
+            goto CACHE_DONE
+        )
+    )
 )
 
 echo [cache] Using local cached copy.
 echo.
 goto CACHE_DONE
+
+REM ==========================================
+REM Read version from cached core script
+REM ==========================================
+
+:READ_LOCAL_PS1_VER
+set "LOCAL_PS1_VER="
+for /f "tokens=2 delims='" %%a in ('findstr /c:"script:Version" "%PS1_FILE%"') do (
+    if not defined LOCAL_PS1_VER set "LOCAL_PS1_VER=%%a"
+)
+exit /b 0
+
+REM ==========================================
+REM Fetch remote version.txt (proxy first, then direct, then mirror)
+REM Sets REMOTE_PS1_VER from the "ps1=" line.
+REM ==========================================
+
+:FETCH_REMOTE_VER
+set "REMOTE_PS1_VER="
+set "VER_URL_BASE=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt"
+
+REM Try local proxy if the port is listening (no full detection here, keep it fast)
+for %%P in (7897 7890) do (
+    if not defined REMOTE_PS1_VER call :FETCH_REMOTE_ONE "http://127.0.0.1:%%P"
+)
+if not defined REMOTE_PS1_VER call :FETCH_REMOTE_ONE ""
+if not defined REMOTE_PS1_VER call :FETCH_REMOTE_ONE "https://ghfast.top/"
+if exist "%REMOTE_VER_FILE%" del /f /q "%REMOTE_VER_FILE%" >nul 2>&1
+exit /b 0
+
+:FETCH_REMOTE_ONE
+REM %1 = proxy URL (empty = direct). ghfast is passed as the download prefix.
+set "DL_PROXY=%~1"
+if /i "%DL_PROXY%"=="https://ghfast.top/" (
+    set "DL_URL=https://ghfast.top/%VER_URL_BASE%"
+    set "DL_PROXY="
+) else (
+    set "DL_URL=%VER_URL_BASE%"
+)
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='SilentlyContinue'; $ProgressPreference='SilentlyContinue'; $a=@{UseBasicParsing=$true;Uri=$env:DL_URL;OutFile=$env:REMOTE_VER_FILE;TimeoutSec=6}; if($env:DL_PROXY){$a.Proxy=$env:DL_PROXY}; Invoke-WebRequest @a" >nul 2>nul
+if not exist "%REMOTE_VER_FILE%" exit /b 0
+for /f "tokens=1,2 delims==" %%a in ('findstr /b /c:"ps1=" "%REMOTE_VER_FILE%"') do (
+    if not defined REMOTE_PS1_VER set "REMOTE_PS1_VER=%%b"
+)
+exit /b 0
 
 :CACHE_STALE
 set "CACHE_VALID=1"
