@@ -17,7 +17,7 @@ REM Config
 REM ==========================================
 
 REM Launcher version (keep in sync with version.txt bat=)
-set "LOCAL_BAT_VERSION=1.5.3"
+set "LOCAL_BAT_VERSION=1.5.4"
 
 set "PS1_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex-switcher.ps1"
 set "MIRROR_PREFIX=https://ghfast.top/"
@@ -152,7 +152,8 @@ call :FETCH_REMOTE_VER
 
 if not "%LOCAL_PS1_VER%"=="" (
     if not "%REMOTE_PS1_VER%"=="" (
-        if not "%LOCAL_PS1_VER%"=="%REMOTE_PS1_VER%" (
+        call :VER_IS_NEWER "%LOCAL_PS1_VER%" "%REMOTE_PS1_VER%"
+        if "%VER_NEWER%"=="1" (
             echo [cache] Cached script %LOCAL_PS1_VER% is older than remote %REMOTE_PS1_VER%, refreshing.
             echo.
             set "NEED_DOWNLOAD=1"
@@ -186,7 +187,7 @@ set "REMOTE_PS1_VER="
 set "VER_URL_BASE=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt"
 
 REM Try local proxy if the port is listening (no full detection here, keep it fast)
-for %%P in (7897 7890) do (
+for %%P in (7897 7890 10809 10808 1080 2080 8889 8080) do (
     if not defined REMOTE_PS1_VER call :FETCH_REMOTE_ONE "http://127.0.0.1:%%P"
 )
 if not defined REMOTE_PS1_VER call :FETCH_REMOTE_ONE ""
@@ -499,7 +500,7 @@ if exist "%BAT_VER_FILE%" del /f /q "%BAT_VER_FILE%" >nul 2>&1
 REM Fetch remote version.txt (proxy 7897/7890 -> direct -> mirror)
 set "VER_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt"
 set "REMOTE_BAT_VER="
-for %%P in (7897 7890) do (
+for %%P in (7897 7890 10809 10808 1080 2080 8889 8080) do (
     if not defined REMOTE_BAT_VER call :FETCH_BAT_VER "http://127.0.0.1:%%P" "%VER_URL%"
 )
 if not defined REMOTE_BAT_VER call :FETCH_BAT_VER "" "%VER_URL%"
@@ -507,12 +508,14 @@ if not defined REMOTE_BAT_VER call :FETCH_BAT_VER "" "https://ghfast.top/%VER_UR
 if exist "%BAT_VER_FILE%" del /f /q "%BAT_VER_FILE%" >nul 2>&1
 
 if not defined REMOTE_BAT_VER exit /b 0
-if "%REMOTE_BAT_VER%"=="%LOCAL_BAT_VERSION%" exit /b 0
+REM Only update when remote is actually NEWER (never downgrade)
+call :VER_IS_NEWER "%LOCAL_BAT_VERSION%" "%REMOTE_BAT_VER%"
+if not "%VER_NEWER%"=="1" exit /b 0
 
 REM Download the new launcher (proxy -> direct -> mirror)
 set "BAT_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex.bat"
 set "BAT_DL_OK="
-for %%P in (7897 7890) do (
+for %%P in (7897 7890 10809 10808 1080 2080 8889 8080) do (
     if not defined BAT_DL_OK call :FETCH_BAT_FILE "http://127.0.0.1:%%P" "%BAT_URL%"
 )
 if not defined BAT_DL_OK call :FETCH_BAT_FILE "" "%BAT_URL%"
@@ -566,10 +569,45 @@ set "BAT_SWAP=%TEMP%\codex-switcher-swap.bat"
 >>"%BAT_SWAP%" echo copy /y "%BAT_NEW_FILE%" "%BAT_SELF%" ^>nul 2^>^&1
 >>"%BAT_SWAP%" echo del /f /q "%BAT_NEW_FILE%" ^>nul 2^>^&1
 >>"%BAT_SWAP%" echo set "CS_BAT_UPDATED=1"
->>"%BAT_SWAP%" echo start "" cmd /c ""%BAT_SELF%" %*"
+>>"%BAT_SWAP%" echo start "" cmd /c call "%BAT_SELF%" %*
 >>"%BAT_SWAP%" echo del /f /q "%%~f0" ^>nul 2^>^&1
 
 REM Launch the swap helper detached, then exit so the file can be replaced
+REM NOTE: relaunch uses 'cmd /c call "path"'; the ""path" args" form breaks
+REM on paths containing characters like '&'.
 start "" cmd /c "%BAT_SWAP%"
 endlocal
+exit /b 0
+
+REM ==========================================
+REM Version compare: is %2 newer than %1 ?
+REM Sets VER_NEWER=1 / 0. Compares dotted numeric parts.
+REM ==========================================
+
+:VER_IS_NEWER
+set "VER_NEWER=0"
+set "V_A=%~1"
+set "V_B=%~2"
+if "%V_A%"=="" goto VIN_DONE
+if "%V_B%"=="" goto VIN_DONE
+if "%V_A%"=="%V_B%" goto VIN_DONE
+for /f "tokens=1,2,3 delims=." %%a in ("%V_A%") do (
+    set "A1=%%a" & set "A2=%%b" & set "A3=%%c"
+)
+for /f "tokens=1,2,3 delims=." %%a in ("%V_B%") do (
+    set "B1=%%a" & set "B2=%%b" & set "B3=%%c"
+)
+if not defined A1 set "A1=0"
+if not defined A2 set "A2=0"
+if not defined A3 set "A3=0"
+if not defined B1 set "B1=0"
+if not defined B2 set "B2=0"
+if not defined B3 set "B3=0"
+if %B1% gtr %A1% set "VER_NEWER=1" & goto VIN_DONE
+if %B1% lss %A1% goto VIN_DONE
+if %B2% gtr %A2% set "VER_NEWER=1" & goto VIN_DONE
+if %B2% lss %A2% goto VIN_DONE
+if %B3% gtr %A3% set "VER_NEWER=1" & goto VIN_DONE
+
+:VIN_DONE
 exit /b 0

@@ -189,8 +189,8 @@ API Key 是明文存在模板文件里的（内联 `experimental_bearer_token`�
 | 下载失败 | 会先试本地代理，再直连，再试 ghfast 镜像；也可 `codex.bat -force` 手动刷新，或用 `-noproxy` 跳过代理探测 |
 | `wire_api` 报错 | 提供商要支持 Responses API，`chat` 已不支持 |
 | 切换后没生效 | 正在跑的 CLI / IDE 会话要重启才会读新配置；若桌面端改回了 `config.toml`，按提示重新应用 |
-| 切换后设置被清空 | 1.5.0+ 只替换 provider 字段，会保留其它设置；旧版本请更新 |
-| 恢复后 Codex 报 TOML 错 | 旧版本可能把无关 `.bak` 当备份恢复；1.5.0+ 只认 `config.toml` 的备份，请在菜单 `[B]` 里选正确的备份 |
+| 切换后设置被清空 | 只替换 provider 字段，会保留其它设置；旧版本请更新 |
+| 恢复后 Codex 报 TOML 错 | 只认 `config.toml` 的备份，请在菜单 `[B]` 里选正确的备份；旧版本请更新 |
 | 想回退 | 菜单 `[B]` 或 `-Restore latest` |
 
 ## 调试

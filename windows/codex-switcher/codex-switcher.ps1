@@ -141,7 +141,7 @@ $script:DryRun         = [bool]$DryRun
 $script:NoRestart      = [bool]$NoRestart
 $script:NoCheck        = [bool]$NoCheck
 $script:NoProxy        = [bool]$NoProxy
-$script:Version        = '1.5.3'
+$script:Version        = '1.5.4'
 $script:RepoRaw        = 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher'
 $script:VersionCache   = Join-Path $WorkDir 'version.cache'
 $script:BatVersionFile = Join-Path $WorkDir 'bat.version'
@@ -1703,7 +1703,7 @@ function Get-LocalProxy {
         }
     }
 
-    # 扫描常见端口
+    # 扫描常见端口（端口列表与 codex.bat / app-proxy 保持一致，改动需三处同步）
     foreach ($cand in @(7897, 7890, 10809, 10808, 1080, 2080, 8889, 8080)) {
         if (Test-ProxyWorks $cand) {
             $script:ProxyUrl = "http://127.0.0.1:$cand"
@@ -1781,6 +1781,21 @@ function Get-LocalBatVersion {
     return ''
 }
 
+function Test-VersionNewer {
+    # 仅当 New 严格大于 Old 时返回 $true，避免远端落后于本地时被降级
+    param([string]$Old, [string]$New)
+    if (-not $New -or -not $Old) { return $false }
+    try {
+        $o = [version]($Old.Trim())
+        $n = [version]($New.Trim())
+        return ($n -gt $o)
+    }
+    catch {
+        # 非标准版本号时退回字符串不相等判断
+        return ($New.Trim() -ne $Old.Trim())
+    }
+}
+
 function Invoke-AutoUpdate {
     # 轻量版本探测。交互模式下只提示，不自动下载（避免启动时长时间卡住）。
     # 只有 -Update 才会真正下载并替换文件。
@@ -1795,11 +1810,16 @@ function Invoke-AutoUpdate {
         return
     }
     else {
-        # 交互启动：只读本地版本缓存，绝不联网，保证秒开
+        # 交互启动：只用本地版本缓存，绝不联网，保证秒开。
+        # 缓存不存在或已过期都直接用（过期也视为可用），联网一律交给 -Update。
         if (-not (Test-Path -LiteralPath $script:VersionCache)) { return }
+        $map = Get-VersionMapFromText -Text (Get-Content -LiteralPath $script:VersionCache -Raw -Encoding UTF8)
+        if (-not $map) { return }
     }
 
-    $map = Get-RemoteVersionMap -Force:$Force
+    if (-not $map) {
+        $map = Get-RemoteVersionMap -Force:$Force
+    }
     if (-not $map) {
         if ($Force) { Write-Warn "无法获取远端版本信息（网络/代理？）。" }
         return
@@ -1814,9 +1834,10 @@ function Invoke-AutoUpdate {
         if ($remoteBat) { Write-Host "远端启动器版本：$remoteBat" }
     }
 
-    $ps1Behind = ($remotePs1 -and $remotePs1 -ne $script:Version)
+    $ps1Behind = (Test-VersionNewer -Old $script:Version -New $remotePs1)
+
     $localBat = Get-LocalBatVersion
-    $batBehind = ($remoteBat -and $remoteBat -ne $localBat)
+    $batBehind = (Test-VersionNewer -Old $localBat -New $remoteBat)
     if (-not $ps1Behind -and -not $batBehind) {
         if ($Force) { Write-Ok "已是最新版本。" }
         return
