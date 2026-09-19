@@ -87,7 +87,7 @@ curl -L -o "%TEMP%\codex.bat" https://raw.githubusercontent.com/Xioaruan912/Xcri
 **按进程代理启动器**：让 ChatGPT Desktop 等 MSIX / Electron 应用单独走本地混合代理，不动系统代理、不开 TUN。
 
 ```powershell
-iwr -UseBasicParsing https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/app-proxy/tools/chatgpt-proxy.ps1 -OutFile "$env:TEMP\chatgpt-proxy.ps1"; & "$env:TEMP\chatgpt-proxy.ps1" -Verify
+iwr -UseBasicParsing https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/app-proxy/ChatGPT-Proxy.bat -OutFile "$env:TEMP\ChatGPT-Proxy.bat"; & "$env:TEMP\ChatGPT-Proxy.bat"
 ```
 
 详见 [windows/app-proxy/README.md](windows/app-proxy/README.md)。
