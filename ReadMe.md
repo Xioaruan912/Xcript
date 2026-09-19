@@ -84,6 +84,14 @@ curl -L -o "%TEMP%\codex.bat" https://raw.githubusercontent.com/Xioaruan912/Xcri
 
 进菜单后用数字键选提供商，`A` 添加中转站，`B` 管理备份，`S` 看状态，`O` 打开配置目录。填了 API Key 会自动列出该 Key 能用的模型。也支持 `-Switch`、`-Status`、`-Restore` 等参数，详见 [windows/codex-switcher/README.md](windows/codex-switcher/README.md)。启动器会缓存核心脚本 24 小时，GitHub 直连失败时自动走 ghfast 镜像。
 
+**按进程代理启动器**：让 ChatGPT Desktop 等 MSIX / Electron 应用单独走本地混合代理，不动系统代理、不开 TUN。
+
+```powershell
+iwr -UseBasicParsing https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/app-proxy/tools/chatgpt-proxy.ps1 -OutFile "$env:TEMP\chatgpt-proxy.ps1"; & "$env:TEMP\chatgpt-proxy.ps1" -Verify
+```
+
+详见 [windows/app-proxy/README.md](windows/app-proxy/README.md)。
+
 ## 国内加速
 
 原始地址前面加 `https://ghfast.top/`：
