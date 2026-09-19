@@ -29,13 +29,19 @@ Codex CLI、ChatGPT 桌面端、VS Code 扩展共用 `%USERPROFILE%\.codex\confi
 
 ## 更新机制
 
-每次运行都会做一次**极小**的版本探测（只取 `version.txt`，几十字节，2 秒超时，结果缓存 24 小时）：
+更新分两级，启动时**不会**因为联网而卡住：
 
-- 远端版本与本地一致 → **不下载任何东西**，直接用本地缓存。
-- 有新版 → 才下载对应的 `codex-switcher.ps1`（核心脚本）和 / 或 `codex.bat`（启动器）。
-- 离线 / 取版本失败 → 直接跳过，照常运行，绝不阻塞。
+- 启动器 `codex.bat`：缓存命中时做一次**极快**版本比对（只取 `version.txt`，6 秒超时，优先走本地代理，失败静默跳过）。发现缓存的核心脚本落后就自动刷新；否则直接用本地缓存。
+- 核心脚本 `codex-switcher.ps1`：**交互启动时只读本地版本缓存，绝不联网**，保证秒开。有新版时只提示，例如「有可用更新（脚本 1.5.2），运行 codex-switcher.ps1 -Update 更新」，不会自动下载。
 
-`codex.bat -force` 会忽略缓存重新拉取核心脚本；`codex-switcher.ps1 -Update` 强制探测并刷新；`-Doctor` 可查看本地/远端版本与更新状态。
+也就是说：正常双击启动 = 秒开；要更新时显式运行 `-Update`（或 `codex.bat -force` 强制重下核心脚本）。
+
+| 命令 | 行为 |
+| --- | --- |
+| `codex.bat` | 缓存可用即秒开；仅在缓存脚本落后时自动刷新 |
+| `codex.bat -force` | 忽略缓存，重新下载核心脚本 |
+| `codex-switcher.ps1 -Update` | 强制探测并下载核心脚本 / 启动器 |
+| `codex-switcher.ps1 -Doctor` | 查看本地 / 远端版本与更新状态 |
 
 编码约定：
 

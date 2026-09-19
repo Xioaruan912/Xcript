@@ -17,7 +17,7 @@ REM Config
 REM ==========================================
 
 REM Launcher version (keep in sync with version.txt bat=)
-set "LOCAL_BAT_VERSION=1.5.1"
+set "LOCAL_BAT_VERSION=1.5.2"
 
 set "PS1_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex-switcher.ps1"
 set "MIRROR_PREFIX=https://ghfast.top/"
@@ -123,8 +123,27 @@ goto CACHE_DONE
 
 :CACHE_FRESH
 set "CACHE_VALID=1"
+
+REM Quick version compare: if the cached core script is older than the
+REM remote version.txt, refresh it. Network failure is ignored (stay offline).
+echo [cache] Verifying cached version (quick) ...
+set "LOCAL_PS1_VER="
+set "VER_BEHIND=0"
+set "VERSION_PROBE=%TEMP%\codex-switcher-version.probe"
+if exist "%VERSION_PROBE%" del /f /q "%VERSION_PROBE%" >nul 2>&1
+set "CODE_SWITCHER_PROXY_PORT=%PROXY_PORT%"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='SilentlyContinue'; $ProgressPreference='SilentlyContinue'; function Test-Tcp([int]$p){ if($p -lt 1 -or $p -gt 65535){return $false}; try{ $c=New-Object Net.Sockets.TcpClient; $iar=$c.BeginConnect('127.0.0.1',$p,$null,$null); if($iar.AsyncWaitHandle.WaitOne(300)){ $c.EndConnect($iar); $c.Close(); return $true }; $c.Close() }catch{}; return $false }; function Test-Proxy([int]$p){ if(-not (Test-Tcp $p)){return $false}; try{ $r=Invoke-WebRequest -UseBasicParsing -Method Head -Uri 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt' -Proxy ('http://127.0.0.1:'+$p) -TimeoutSec 5; return ($r.StatusCode -ge 200 -and $r.StatusCode -lt 400) }catch{ return $false } }; $proxy=''; if(Test-Proxy 7897){$proxy=7897} elseif(Test-Proxy 7890){$proxy=7890}; $local=''; try{ $c=Get-Content -LiteralPath $env:PS1_FILE -Raw; if($c -match \"\`$script:Version\s*=\s*'([^']+)'\"){ $local=$Matches[1] } }catch{}; $remote=''; $targets=@(); if($proxy){ $targets += @{u='https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt';p=('http://127.0.0.1:'+$proxy)} }; $targets += @{u='https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt';p=''}; $targets += @{u='https://ghfast.top/https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt';p=''}; foreach($t in $targets){ try{ $a=@{UseBasicParsing=$true;Uri=$t.u;TimeoutSec=6}; if($t.p){$a.Proxy=$t.p}; $txt=(Invoke-WebRequest @a).Content; if($txt -match '(?m)^ps1=(\S+)'){ $remote=$Matches[1]; break } }catch{} }; if($remote -and $local -and ($remote -ne $local)){ Set-Content -LiteralPath $env:VERSION_PROBE -Value $remote -Encoding ASCII } elseif($remote -and -not $local){ } else { }"
+
+if exist "%VERSION_PROBE%" (
+    set /p REMOTE_VER=<"%VERSION_PROBE%"
+    del /f /q "%VERSION_PROBE%" >nul 2>&1
+    echo [cache] Cached script is outdated (remote %REMOTE_VER%), refreshing.
+    echo.
+    set "NEED_DOWNLOAD=1"
+    goto CACHE_DONE
+)
+
 echo [cache] Using local cached copy.
-echo [cache] GitHub will not be contacted this time.
 echo.
 goto CACHE_DONE
 

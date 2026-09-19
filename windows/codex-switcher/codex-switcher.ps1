@@ -141,7 +141,7 @@ $script:DryRun         = [bool]$DryRun
 $script:NoRestart      = [bool]$NoRestart
 $script:NoCheck        = [bool]$NoCheck
 $script:NoProxy        = [bool]$NoProxy
-$script:Version        = '1.5.1'
+$script:Version        = '1.5.2'
 $script:RepoRaw        = 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher'
 $script:VersionCache   = Join-Path $WorkDir 'version.cache'
 $script:BatVersionFile = Join-Path $WorkDir 'bat.version'
@@ -1574,7 +1574,7 @@ function Get-LocalProxy {
         try {
             $r = Invoke-WebRequest -UseBasicParsing -Method Head `
                 -Uri "$($script:RepoRaw)/version.txt" `
-                -Proxy "http://127.0.0.1:$P" -TimeoutSec 15 -ErrorAction Stop
+                -Proxy "http://127.0.0.1:$P" -TimeoutSec 5 -ErrorAction Stop
             return ($r.StatusCode -ge 200 -and $r.StatusCode -lt 400)
         }
         catch { return $false }
@@ -1651,12 +1651,18 @@ function Get-RemoteVersionMap {
         }
         catch { }
     }
-    $urls = @("$($script:RepoRaw)/version.txt", "https://ghfast.top/$($script:RepoRaw)/version.txt")
-    $proxy = Get-LocalProxy
-    foreach ($u in $urls) {
+    # 目标顺序：本地代理 -> GitHub 直连 -> 镜像
+    $targets = @()
+    $proxy = ''
+    if (-not $script:NoProxy) { $proxy = Get-LocalProxy }
+    if ($proxy) { $targets += @{ u = "$($script:RepoRaw)/version.txt"; p = $proxy } }
+    $targets += @{ u = "$($script:RepoRaw)/version.txt"; p = '' }
+    $targets += @{ u = "https://ghfast.top/$($script:RepoRaw)/version.txt"; p = '' }
+
+    foreach ($t in $targets) {
         try {
-            $args = @{ UseBasicParsing = $true; Uri = $u; TimeoutSec = 8 }
-            if ($proxy -and $u -like "$($script:RepoRaw)/*") { $args.Proxy = $proxy }
+            $args = @{ UseBasicParsing = $true; Uri = $t.u; TimeoutSec = 6 }
+            if ($t.p) { $args.Proxy = $t.p }
             $text = (Invoke-WebRequest @args).Content
             if ($text) {
                 try {
@@ -1680,9 +1686,22 @@ function Get-LocalBatVersion {
 }
 
 function Invoke-AutoUpdate {
-    # 只做轻量版本探测；版本一致时零下载
+    # 轻量版本探测。交互模式下只提示，不自动下载（避免启动时长时间卡住）。
+    # 只有 -Update 才会真正下载并替换文件。
     param([switch]$Force)
     if ($script:DryRun -or $script:NoCheck) { return }
+
+    if ($Force) {
+        Write-Info "正在检查更新..."
+    }
+    elseif (-not $script:Interactive) {
+        # 非交互（脚本调用）时不做联网探测，避免阻塞
+        return
+    }
+    else {
+        # 交互启动：只读本地版本缓存，绝不联网，保证秒开
+        if (-not (Test-Path -LiteralPath $script:VersionCache)) { return }
+    }
 
     $map = Get-RemoteVersionMap -Force:$Force
     if (-not $map) {
@@ -1692,7 +1711,6 @@ function Invoke-AutoUpdate {
 
     $remotePs1 = "$($map['ps1'])".Trim()
     $remoteBat = "$($map['bat'])".Trim()
-    $updated = $false
 
     if ($Force) {
         Write-Host "本地脚本版本：$($script:Version)"
@@ -1700,9 +1718,29 @@ function Invoke-AutoUpdate {
         if ($remoteBat) { Write-Host "远端启动器版本：$remoteBat" }
     }
 
-    if ($remotePs1 -and $remotePs1 -ne $script:Version -and $PSCommandPath) {
+    $ps1Behind = ($remotePs1 -and $remotePs1 -ne $script:Version)
+    $localBat = Get-LocalBatVersion
+    $batBehind = ($remoteBat -and $remoteBat -ne $localBat)
+    if (-not $ps1Behind -and -not $batBehind) {
+        if ($Force) { Write-Ok "已是最新版本。" }
+        return
+    }
+
+    # 交互模式：只提示，不下载。避免启动时因网络/代理问题长时间无响应。
+    if (-not $Force) {
+        $hint = @()
+        if ($ps1Behind) { $hint += "脚本 $remotePs1" }
+        if ($batBehind) { $hint += "启动器 $remoteBat" }
+        Write-Warn "有可用更新（$($hint -join ' / ')），运行 codex-switcher.ps1 -Update 更新。"
+        return
+    }
+
+    $updated = $false
+
+    if ($ps1Behind -and $PSCommandPath) {
+        Write-Info "下载核心脚本 $remotePs1 ..."
         $tmp = Join-Path $WorkDir 'codex-switcher.update.ps1'
-        if (Invoke-HttpDownload -Relative 'codex-switcher.ps1' -OutFile $tmp -TimeoutSec 60) {
+        if (Invoke-HttpDownload -Relative 'codex-switcher.ps1' -OutFile $tmp -TimeoutSec 20) {
             if ((Get-Item -LiteralPath $tmp).Length -gt 200) {
                 Copy-Item -LiteralPath $tmp -Destination $PSCommandPath -Force
                 Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
@@ -1711,12 +1749,15 @@ function Invoke-AutoUpdate {
                 $updated = $true
             }
         }
+        else {
+            Write-Warn "核心脚本下载失败（网络/代理？）。"
+        }
     }
 
-    $localBat = Get-LocalBatVersion
-    if ($remoteBat -and $remoteBat -ne $localBat) {
+    if ($batBehind) {
+        Write-Info "下载启动器 $remoteBat ..."
         $tmp = Join-Path $WorkDir 'codex.bat.update'
-        if (Invoke-HttpDownload -Relative 'codex.bat' -OutFile $tmp -TimeoutSec 60) {
+        if (Invoke-HttpDownload -Relative 'codex.bat' -OutFile $tmp -TimeoutSec 20) {
             $txt = Get-Content -LiteralPath $tmp -Raw -ErrorAction SilentlyContinue
             if ($txt -and $txt -match 'LOCAL_BAT_VERSION' -and $txt -match 'codex-switcher') {
                 Copy-Item -LiteralPath $tmp -Destination (Join-Path $WorkDir 'codex.bat') -Force
@@ -1729,9 +1770,12 @@ function Invoke-AutoUpdate {
                 Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
             }
         }
+        else {
+            Write-Warn "启动器下载失败（网络/代理？）。"
+        }
     }
 
-    if (-not $updated -and $Force) { Write-Ok "已是最新版本。" }
+    if (-not $updated) { Write-Warn "更新未完成，可稍后重试 -Update。" }
 }
 
 function Invoke-Doctor {
