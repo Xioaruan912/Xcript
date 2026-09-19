@@ -7,6 +7,8 @@ Windows 下切换 Codex 的配置，支持官方 OpenAI、OpenCode Go、DeepSeek
 
 Codex CLI、ChatGPT 桌面端、VS Code 扩展共用 `%USERPROFILE%\.codex\config.toml`。切换时只替换里面的 `model`、`model_provider` 和 `[model_providers.*]`，其余设置（`[plugins]`、`[mcp_servers]`、`[projects]`、`[desktop]` 等）原样保留，并在切换后按需重启 ChatGPT 桌面端。
 
+重启 ChatGPT 时会**先探测本地代理并通过 `--proxy-server` 启动**（用 `IApplicationActivationManager` 带包身份传参），避免桌面端直连导致加载不出来 / DNS 污染。探测不到代理才退回直连启动。
+
 ## 文件
 
 - `codex.bat`：启动器。从 GitHub 下载核心脚本并本地缓存 24 小时；下载后会校验内容（必须是核心脚本而不是 404 页面），失败时用旧缓存，直连失败时自动走 ghfast 镜像。下载前会探测本地代理，有就优先走代理。最后运行核心脚本。

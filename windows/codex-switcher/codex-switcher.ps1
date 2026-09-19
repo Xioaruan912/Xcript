@@ -141,7 +141,7 @@ $script:DryRun         = [bool]$DryRun
 $script:NoRestart      = [bool]$NoRestart
 $script:NoCheck        = [bool]$NoCheck
 $script:NoProxy        = [bool]$NoProxy
-$script:Version        = '1.5.2'
+$script:Version        = '1.5.3'
 $script:RepoRaw        = 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher'
 $script:VersionCache   = Join-Path $WorkDir 'version.cache'
 $script:BatVersionFile = Join-Path $WorkDir 'bat.version'
@@ -951,6 +951,59 @@ function Set-ProviderCatalog {
 # ============================================================
 # 切换
 # ============================================================
+function Initialize-AppActivation {
+    # 用 C# 封装 COM 激活，避免 PS 5.1 无法把 __ComObject 转成 ComImport 接口
+    $typeName = 'CodexSwitcher.AppActivator'
+    if (-not ([System.Management.Automation.PSTypeName]$typeName).Type) {
+        Add-Type -TypeDefinition @'
+using System;
+using System.Runtime.InteropServices;
+
+namespace CodexSwitcher
+{
+    [ComImport, Guid("2e941141-7f97-4756-ba1d-9decde894a3d"),
+     InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    public interface IApplicationActivationManager
+    {
+        [PreserveSig]
+        int ActivateApplication(
+            [In, MarshalAs(UnmanagedType.LPWStr)] string appUserModelId,
+            [In, MarshalAs(UnmanagedType.LPWStr)] string arguments,
+            [In] int options,
+            [Out] out uint processId);
+
+        [PreserveSig]
+        int ActivateForFile(
+            [In, MarshalAs(UnmanagedType.LPWStr)] string appUserModelId,
+            [In] IntPtr itemArray,
+            [In, MarshalAs(UnmanagedType.LPWStr)] string verb,
+            [Out] out uint processId);
+
+        [PreserveSig]
+        int ActivateForProtocol(
+            [In, MarshalAs(UnmanagedType.LPWStr)] string appUserModelId,
+            [In] IntPtr itemArray,
+            [Out] out uint processId);
+    }
+
+    public static class AppActivator
+    {
+        public static uint Activate(string aumid, string arguments)
+        {
+            Type t = Type.GetTypeFromCLSID(new Guid("45BA127D-10A8-46EA-8AB7-56EA9078943C"));
+            IApplicationActivationManager mgr =
+                (IApplicationActivationManager)Activator.CreateInstance(t);
+            uint pid;
+            int hr = mgr.ActivateApplication(aumid, arguments, 0, out pid);
+            if (hr < 0) { Marshal.ThrowExceptionForHR(hr); }
+            return pid;
+        }
+    }
+}
+'@
+    }
+}
+
 function Restart-ChatGPTDesktop {
     if ($script:NoRestart) {
         Write-Dim "已跳过重启 ChatGPT 桌面端（-NoRestart）。"
@@ -969,6 +1022,44 @@ function Restart-ChatGPTDesktop {
         Start-Sleep -Milliseconds 1500
     }
 
+    # 解析 ChatGPT 的 AUMID（包身份 + 可传参启动）
+    $aumid = $null
+    if (Get-Command Get-StartApps -ErrorAction SilentlyContinue) {
+        $app = Get-StartApps -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -match 'ChatGPT' } |
+            Select-Object -First 1
+        if ($app) { $aumid = $app.AppID }
+    }
+
+    # 探测本地代理，尽量让 ChatGPT 走代理（否则直连 + DNS 污染会一直转圈）
+    $proxyUrl = Get-LocalProxy
+    $proxyArgs = ''
+    if ($proxyUrl) {
+        $proxyArgs = "--proxy-server=`"$proxyUrl`" --proxy-bypass-list=`"localhost;127.0.0.1`""
+        Write-Info "ChatGPT 将通过 $proxyUrl 启动。"
+    }
+    else {
+        Write-Warn "未探测到本地代理，ChatGPT 将直连网络。"
+    }
+
+    if ($aumid) {
+        try {
+            [void](Initialize-AppActivation)
+            $launchedPid = [CodexSwitcher.AppActivator]::Activate($aumid, $proxyArgs)
+            if ($proxyArgs) {
+                Write-Ok "ChatGPT 桌面端已重启（PID $launchedPid，走代理）。"
+            }
+            else {
+                Write-Ok "ChatGPT 桌面端已重启（PID $launchedPid）。"
+            }
+            return
+        }
+        catch {
+            Write-Warn "MSIX 激活失败：$($_.Exception.Message)"
+        }
+    }
+
+    # 回退：shell:AppsFolder（无代理参数）
     if (Get-Command Get-StartApps -ErrorAction SilentlyContinue) {
         $app = Get-StartApps -ErrorAction SilentlyContinue |
             Where-Object { $_.Name -match 'ChatGPT' } |
@@ -976,7 +1067,7 @@ function Restart-ChatGPTDesktop {
         if ($app) {
             try {
                 Start-Process ("shell:AppsFolder\" + $app.AppID)
-                Write-Ok "ChatGPT 桌面端已重启。"
+                Write-Warn "已用默认方式启动 ChatGPT（未带代理参数）。"
                 return
             }
             catch { }
@@ -990,7 +1081,12 @@ function Restart-ChatGPTDesktop {
     )
     $exe = $candidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
     if ($exe) {
-        Start-Process $exe
+        if ($proxyArgs) {
+            Start-Process $exe -ArgumentList $proxyArgs
+        }
+        else {
+            Start-Process $exe
+        }
         Write-Ok "ChatGPT 桌面端已重启。"
         return
     }
