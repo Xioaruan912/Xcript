@@ -17,7 +17,7 @@ REM Config
 REM ==========================================
 
 REM Launcher version (keep in sync with version.txt bat=)
-set "LOCAL_BAT_VERSION=1.5.2"
+set "LOCAL_BAT_VERSION=1.5.3"
 
 set "PS1_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex-switcher.ps1"
 set "MIRROR_PREFIX=https://ghfast.top/"
@@ -54,6 +54,24 @@ shift
 goto PARSE_ARGS
 
 :ARGS_DONE
+
+REM ==========================================
+REM Self-update the launcher itself
+REM
+REM A running .bat can be overwritten on Windows (cmd reads it line by
+REM line, no file lock), but overwriting it mid-run truncates the current
+REM execution. So we download a new copy, hand off to a tiny helper that
+REM swaps the file AFTER this process exits, then exit immediately.
+REM A CS_BAT_UPDATED guard prevents an update loop.
+REM ==========================================
+
+if "%CS_BAT_UPDATED%"=="1" goto SELFUPDATE_DONE
+if "%NO_PROXY%"=="1" goto SELFUPDATE_DONE
+if not exist "%WORK_DIR%" mkdir "%WORK_DIR%" >nul 2>&1
+call :CHECK_BAT_UPDATE
+if "%BAT_NEEDS_UPDATE%"=="1" goto SELFUPDATE_APPLY
+
+:SELFUPDATE_DONE
 
 REM ==========================================
 REM Banner
@@ -465,3 +483,93 @@ echo.
 pause >nul
 endlocal
 exit 1
+
+REM ==========================================
+REM Launcher self-update: check remote bat= version
+REM Sets BAT_NEEDS_UPDATE=1 when a newer launcher exists and was downloaded.
+REM ==========================================
+
+:CHECK_BAT_UPDATE
+set "BAT_NEEDS_UPDATE=0"
+set "BAT_NEW_FILE=%TEMP%\codex-switcher-new.bat"
+set "BAT_VER_FILE=%TEMP%\codex-switcher-bat-ver.txt"
+if exist "%BAT_NEW_FILE%" del /f /q "%BAT_NEW_FILE%" >nul 2>&1
+if exist "%BAT_VER_FILE%" del /f /q "%BAT_VER_FILE%" >nul 2>&1
+
+REM Fetch remote version.txt (proxy 7897/7890 -> direct -> mirror)
+set "VER_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt"
+set "REMOTE_BAT_VER="
+for %%P in (7897 7890) do (
+    if not defined REMOTE_BAT_VER call :FETCH_BAT_VER "http://127.0.0.1:%%P" "%VER_URL%"
+)
+if not defined REMOTE_BAT_VER call :FETCH_BAT_VER "" "%VER_URL%"
+if not defined REMOTE_BAT_VER call :FETCH_BAT_VER "" "https://ghfast.top/%VER_URL%"
+if exist "%BAT_VER_FILE%" del /f /q "%BAT_VER_FILE%" >nul 2>&1
+
+if not defined REMOTE_BAT_VER exit /b 0
+if "%REMOTE_BAT_VER%"=="%LOCAL_BAT_VERSION%" exit /b 0
+
+REM Download the new launcher (proxy -> direct -> mirror)
+set "BAT_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex.bat"
+set "BAT_DL_OK="
+for %%P in (7897 7890) do (
+    if not defined BAT_DL_OK call :FETCH_BAT_FILE "http://127.0.0.1:%%P" "%BAT_URL%"
+)
+if not defined BAT_DL_OK call :FETCH_BAT_FILE "" "%BAT_URL%"
+if not defined BAT_DL_OK call :FETCH_BAT_FILE "" "https://ghfast.top/%BAT_URL%"
+if not defined BAT_DL_OK exit /b 0
+
+REM Sanity check the downloaded file
+findstr /c:"LOCAL_BAT_VERSION" "%BAT_NEW_FILE%" >nul 2>&1
+if errorlevel 1 exit /b 0
+findstr /c:"codex-switcher" "%BAT_NEW_FILE%" >nul 2>&1
+if errorlevel 1 exit /b 0
+
+set "BAT_NEEDS_UPDATE=1"
+exit /b 0
+
+:FETCH_BAT_VER
+REM %1 = proxy (empty=direct), %2 = url
+set "DL_PROXY=%~1"
+set "DL_URL=%~2"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='SilentlyContinue'; $ProgressPreference='SilentlyContinue'; $a=@{UseBasicParsing=$true;Uri=$env:DL_URL;OutFile=$env:BAT_VER_FILE;TimeoutSec=6}; if($env:DL_PROXY){$a.Proxy=$env:DL_PROXY}; Invoke-WebRequest @a" >nul 2>nul
+if not exist "%BAT_VER_FILE%" exit /b 0
+for /f "tokens=1,2 delims==" %%a in ('findstr /b /c:"bat=" "%BAT_VER_FILE%"') do (
+    if not defined REMOTE_BAT_VER set "REMOTE_BAT_VER=%%b"
+)
+exit /b 0
+
+:FETCH_BAT_FILE
+REM %1 = proxy (empty=direct), %2 = url
+set "DL_PROXY=%~1"
+set "DL_URL=%~2"
+if exist "%BAT_NEW_FILE%" del /f /q "%BAT_NEW_FILE%" >nul 2>&1
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='SilentlyContinue'; $ProgressPreference='SilentlyContinue'; $a=@{UseBasicParsing=$true;Uri=$env:DL_URL;OutFile=$env:BAT_NEW_FILE;TimeoutSec=20}; if($env:DL_PROXY){$a.Proxy=$env:DL_PROXY}; Invoke-WebRequest @a" >nul 2>nul
+if not exist "%BAT_NEW_FILE%" exit /b 0
+set "BAT_DL_OK=1"
+exit /b 0
+
+REM ==========================================
+REM Apply launcher update by handing off to a helper that swaps the file
+REM after this process exits, then re-running the new launcher.
+REM ==========================================
+
+:SELFUPDATE_APPLY
+echo.
+echo [update] New launcher %REMOTE_BAT_VER% found (current %LOCAL_BAT_VERSION%).
+echo [update] Applying update and restarting ...
+
+set "BAT_SELF=%~f0"
+set "BAT_SWAP=%TEMP%\codex-switcher-swap.bat"
+> "%BAT_SWAP%" echo @echo off
+>>"%BAT_SWAP%" echo ping -n 2 127.0.0.1 ^>nul
+>>"%BAT_SWAP%" echo copy /y "%BAT_NEW_FILE%" "%BAT_SELF%" ^>nul 2^>^&1
+>>"%BAT_SWAP%" echo del /f /q "%BAT_NEW_FILE%" ^>nul 2^>^&1
+>>"%BAT_SWAP%" echo set "CS_BAT_UPDATED=1"
+>>"%BAT_SWAP%" echo start "" cmd /c ""%BAT_SELF%" %*"
+>>"%BAT_SWAP%" echo del /f /q "%%~f0" ^>nul 2^>^&1
+
+REM Launch the swap helper detached, then exit so the file can be replaced
+start "" cmd /c "%BAT_SWAP%"
+endlocal
+exit /b 0
