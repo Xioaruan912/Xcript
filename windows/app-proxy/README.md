@@ -55,10 +55,20 @@ set "PROXY_BYPASS=localhost;127.0.0.1"
 
 | 项目 | 来源 | 默认 |
 | --- | --- | --- |
-| 代理端口 | `verge.yaml: verge_mixed_port` -> `clash-verge.yaml/clash-verge.yaml: mixed-port` | 7897 |
+| 代理端口 | 见下方「端口探测顺序」 | 探测，探测不到会询问 |
 | 安装目录 | 由 `PackageFamilyName` 反查 `InstallLocation` | 自动，不写死版本号 |
 | 进程名 | `AppxManifest.xml` 的 `Executable="..."` | ChatGPT |
 | AUMID | `Get-StartApps` 按 `<PackageFamilyName>!*` 匹配 | 自动 |
+
+### 端口探测顺序
+
+1. 命令行 `port=NNNN` / 环境变量 `PROXY_PORT`。
+2. 上次保存的端口（`%LOCALAPPDATA%\ChatGPTProxy\config.json`）。
+3. Clash Verge 配置：`verge.yaml: verge_mixed_port` -> `clash-verge.yaml: mixed-port`。
+4. 扫描本机常见端口：7897 / 7890 / 10809 / 10808 / 1080 / 2080 / 8889 / 8080，取第一个能真正代理的。
+5. 都没有就**询问用户**输入端口（最多 3 次，会验证能否通过它访问网络），成功后记住到 `config.json`，下次直接用。
+
+所以代理端口不是 7897 的用户，首次运行输入一次即可，之后无需再输。
 
 ChatGPT Desktop 当前实测：AUMID `OpenAI.Codex_2p2nqsd0c76g0!App`，Chromium 框架，Full Trust（`runFullTrust` + `Windows.FullTrustApplication`，非 AppContainer，无需 loopback 豁免）。
 

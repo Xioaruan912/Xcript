@@ -57,7 +57,7 @@ foreach ($a in $args) {
         Write-Host '用法: 双击直接启动，或带参数运行：'
         Write-Host '  direct        直连 exe（放弃 MSIX 包身份），仅当 AUMID 激活丢弃参数时的回退'
         Write-Host '  env           为非 Chromium 子进程写入用户级 HTTP_PROXY/HTTPS_PROXY/NO_PROXY'
-        Write-Host '  port=NNNN     指定本地混合代理端口（默认自动读取 Clash Verge 配置）'
+        Write-Host '  port=NNNN     指定本地混合代理端口（默认自动探测，探测不到会询问）'
         Write-Host '  aumid=...     指定 AUMID（默认自动从 Get-StartApps 解析）'
         Write-Host '  make-shortcut 在桌面创建带应用图标的快捷方式（隐藏窗口启动）'
         exit 0
@@ -90,22 +90,92 @@ if (-not $Aumid) {
     if ($start) { $Aumid = $start.AppID } else { $Aumid = "$($pkg.PackageFamilyName)!App" }
 }
 
-# ---- 4. 自动探测代理端口：verge.yaml 的 verge_mixed_port，其次 clash-verge.yaml 的 mixed-port
+# ---- 4. 代理端口：命令行 > 环境变量 > 本地保存 > 自动探测 > 询问用户
+$ConfigDir  = Join-Path $env:LOCALAPPDATA 'ChatGPTProxy'
+$ConfigFile = Join-Path $ConfigDir 'config.json'
+
+function Test-PortOpen([int]$p) {
+    if ($p -lt 1 -or $p -gt 65535) { return $false }
+    try {
+        $t = New-Object Net.Sockets.TcpClient
+        $iar = $t.BeginConnect('127.0.0.1', $p, $null, $null)
+        if ($iar.AsyncWaitHandle.WaitOne(300)) { $t.EndConnect($iar); $t.Close(); return $true }
+        $t.Close(); return $false
+    } catch { return $false }
+}
+
+function Test-ProxyPort([int]$p) {
+    if (-not (Test-PortOpen $p)) { return $false }
+    try {
+        $r = Invoke-RestMethod -Uri 'https://ipinfo.io/json' -Proxy "http://127.0.0.1:$p" -TimeoutSec 12 -ErrorAction Stop
+        return [bool]$r.ip
+    } catch { return $false }
+}
+
+# 4a. 读取上次保存的端口
+if (-not $Port -and (Test-Path -LiteralPath $ConfigFile)) {
+    try {
+        $saved = (Get-Content -LiteralPath $ConfigFile -Raw | ConvertFrom-Json).port
+        if ($saved -and (Test-PortOpen ([int]$saved))) {
+            $Port = [int]$saved
+            Show "使用上次保存的代理端口: $Port"
+        }
+    } catch { }
+}
+
+# 4b. 读取 Clash Verge 配置
 if (-not $Port) {
-    $Port = 7897
     $pairs = @(
-        @{ p = (Join-Path $env:APPDATA 'io.github.clash-verge-rev.clash-verge-rev\verge.yaml');     r = '(?m)^\s*verge_mixed_port:\s*(\d+)' },
-        @{ p = (Join-Path $env:APPDATA 'clash-verge\verge.yaml');                                 r = '(?m)^\s*verge_mixed_port:\s*(\d+)' },
+        @{ p = (Join-Path $env:APPDATA 'io.github.clash-verge-rev.clash-verge-rev\verge.yaml');       r = '(?m)^\s*verge_mixed_port:\s*(\d+)' },
+        @{ p = (Join-Path $env:APPDATA 'clash-verge\verge.yaml');                                   r = '(?m)^\s*verge_mixed_port:\s*(\d+)' },
         @{ p = (Join-Path $env:APPDATA 'io.github.clash-verge-rev.clash-verge-rev\clash-verge.yaml'); r = '(?m)^\s*mixed-port:\s*(\d+)' },
-        @{ p = (Join-Path $env:APPDATA 'clash-verge\clash-verge.yaml');                           r = '(?m)^\s*mixed-port:\s*(\d+)' }
+        @{ p = (Join-Path $env:APPDATA 'clash-verge\clash-verge.yaml');                             r = '(?m)^\s*mixed-port:\s*(\d+)' }
     )
     foreach ($e in $pairs) {
         if (Test-Path -LiteralPath $e.p) {
             $raw = Get-Content -LiteralPath $e.p -Raw
-            if ($raw -match $e.r) { $Port = [int]$Matches[1]; break }
+            if ($raw -match $e.r) {
+                $cand = [int]$Matches[1]
+                if (Test-PortOpen $cand) { $Port = $cand; Show "从 Clash 配置读取到代理端口: $Port"; break }
+            }
         }
     }
 }
+
+# 4c. 扫描本机常见代理端口，挑一个真正能代理的
+if (-not $Port) {
+    foreach ($cand in @(7897, 7890, 10809, 10808, 1080, 2080, 8889, 8080)) {
+        if (Test-ProxyPort $cand) { $Port = $cand; Show "自动探测到可用代理端口: $Port"; break }
+    }
+}
+
+# 4d. 仍然没有：询问用户（首次运行时）
+if (-not $Port) {
+    Write-Host ''
+    Write-Host '[ChatGPT-Proxy] 未能自动检测到本地代理端口。' -ForegroundColor Yellow
+    Write-Host '请输入你的代理混合端口（http 代理），例如 7897 / 7890 / 10809。' -ForegroundColor Yellow
+    if ($env:SELF -and [Console]::IsInputRedirected) {
+        throw '非交互环境且未提供端口，请使用 port=NNNN 参数指定。'
+    }
+    for ($try = 0; $try -lt 3; $try++) {
+        $ans = Read-Host '代理端口'
+        if ($ans -match '^\d+$') {
+            $cand = [int]$ans
+            if (Test-ProxyPort $cand) { $Port = $cand; break }
+            Write-Host "[ChatGPT-Proxy] 端口 $cand 未能通过代理访问网络，请确认代理已开启。" -ForegroundColor Yellow
+        } else {
+            Write-Host '[ChatGPT-Proxy] 请输入纯数字端口。' -ForegroundColor Yellow
+        }
+    }
+    if (-not $Port) { throw '未获得可用的代理端口，已退出。' }
+}
+
+# 4e. 记住端口，下次直接用
+try {
+    if (-not (Test-Path -LiteralPath $ConfigDir)) { New-Item -ItemType Directory -Force -Path $ConfigDir | Out-Null }
+    @{ port = $Port } | ConvertTo-Json -Compress | Set-Content -LiteralPath $ConfigFile -Encoding UTF8
+} catch { }
+
 $ProxyServer = "http://127.0.0.1:$Port"
 
 Show "包     : $($pkg.PackageFullName)"
