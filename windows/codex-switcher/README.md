@@ -9,9 +9,23 @@ Codex CLI、ChatGPT 桌面端、VS Code 扩展共用 `%USERPROFILE%\.codex\confi
 
 ## 文件
 
-- `codex.bat`：启动器。从 GitHub 下载核心脚本并本地缓存 24 小时；下载后会校验内容（必须是核心脚本而不是 404 页面），失败时用旧缓存，直连失败时自动走 ghfast 镜像。最后运行核心脚本。
-- `codex-switcher.ps1`：核心脚本，菜单、切换、备份、模型探测等逻辑都在这里。
+- `codex.bat`：启动器。从 GitHub 下载核心脚本并本地缓存 24 小时；下载后会校验内容（必须是核心脚本而不是 404 页面），失败时用旧缓存，直连失败时自动走 ghfast 镜像。下载前会探测本地代理，有就优先走代理。最后运行核心脚本。
+- `codex-switcher.ps1`：核心脚本，菜单、切换、备份、模型探测等逻辑都在这里。核心脚本的自动更新同样优先走本地代理。
 - `version.txt`：版本号（`bat=` 启动器版本，`ps1=` 核心脚本版本），供启动器和脚本做轻量更新探测。
+
+## 代理
+
+下载与自动更新会先探测本地代理（**只读，不写入任何配置文件**）：
+
+1. 环境变量 `PROXY_PORT`。
+2. Clash Verge 配置：`verge.yaml: verge_mixed_port` -> `clash-verge.yaml: mixed-port`。
+3. 扫描本机常见端口：7897 / 7890 / 10809 / 10808 / 1080 / 2080 / 8889 / 8080。
+
+探测到就用它访问 GitHub（验证方式是对 GitHub 实际发一次请求），并打印来源；探测不到会询问一次端口（仅在有下载需求时），回车则直接下载。
+
+下载顺序：**本地代理 -> GitHub 直连 -> ghfast 镜像 -> 旧缓存**。
+
+`codex.bat -noproxy` 或 `codex-switcher.ps1 -NoProxy` 可跳过探测，直接直连 / 镜像。
 
 ## 更新机制
 
@@ -124,6 +138,7 @@ experimental_bearer_token = "sk-xxxx"
 | `-Update` | 强制做一次版本探测，有更新就刷新 |
 | `-Doctor` | 环境自检（版本、目录、写权限、远端版本） |
 | `-NoCheck` | 跳过启动时的版本探测 |
+| `-NoProxy` | 跳过本地代理探测，更新 / 下载直接直连或走镜像 |
 
 ```powershell
 .\codex-switcher.ps1 -Switch go -ApiKey sk-xxxx -Model deepseek-v4-flash -NoRestart
@@ -151,7 +166,7 @@ API Key 是明文存在模板文件里的（内联 `experimental_bearer_token`�
 | --- | --- |
 | 中文乱码 | 确认 `codex-switcher.ps1` 是 UTF-8 带 BOM，`codex.bat` 保持纯 ASCII |
 | `Invoke-WebRequest : 404` / 下载失败 | 多半是在用旧路径的旧启动器（`win/Codex_switcher/`），按 README 顶部重新获取新地址的 `codex.bat` |
-| 下载失败 | 直连失败会自动试 ghfast 镜像，也可以 `codex.bat -force` 手动刷新 |
+| 下载失败 | 会先试本地代理，再直连，再试 ghfast 镜像；也可 `codex.bat -force` 手动刷新，或用 `-noproxy` 跳过代理探测 |
 | `wire_api` 报错 | 提供商要支持 Responses API，`chat` 已不支持 |
 | 切换后没生效 | 正在跑的 CLI / IDE 会话要重启才会读新配置；若桌面端改回了 `config.toml`，按提示重新应用 |
 | 切换后设置被清空 | 1.5.0+ 只替换 provider 字段，会保留其它设置；旧版本请更新 |

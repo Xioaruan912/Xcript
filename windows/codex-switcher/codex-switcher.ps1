@@ -54,6 +54,9 @@
 .PARAMETER NoRestart
     切换后不重启 ChatGPT 桌面端。
 
+.PARAMETER NoProxy
+    跳过本地代理探测，更新 / 下载直接连 GitHub（再回退镜像）。
+
 .PARAMETER DryRun
     只显示将要执行的操作，不修改任何文件。
 
@@ -101,6 +104,8 @@ param(
 
     [switch]$NoCheck,
 
+    [switch]$NoProxy,
+
     [switch]$DryRun
 )
 
@@ -135,10 +140,13 @@ $script:ParamModel     = $Model
 $script:DryRun         = [bool]$DryRun
 $script:NoRestart      = [bool]$NoRestart
 $script:NoCheck        = [bool]$NoCheck
-$script:Version        = '1.5.0'
+$script:NoProxy        = [bool]$NoProxy
+$script:Version        = '1.5.1'
 $script:RepoRaw        = 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher'
 $script:VersionCache   = Join-Path $WorkDir 'version.cache'
 $script:BatVersionFile = Join-Path $WorkDir 'bat.version'
+$script:ProxyProbed    = $false
+$script:ProxyUrl       = ''
 $script:Interactive    = $true
 try { $script:Interactive = -not [Console]::IsInputRedirected } catch { }
 
@@ -1541,6 +1549,97 @@ function Get-VersionMapFromText {
     return $map
 }
 
+function Get-LocalProxy {
+    # 只读探测可用本地代理（Clash 配置 -> 扫描常见端口），不落地文件。
+    # 结果在本次运行内缓存。
+    if ($script:NoProxy) { return '' }
+    if ($script:ProxyProbed) { return $script:ProxyUrl }
+
+    $script:ProxyProbed = $true
+
+    function Test-PortOpen([int]$P) {
+        if ($P -lt 1 -or $P -gt 65535) { return $false }
+        try {
+            $c = New-Object Net.Sockets.TcpClient
+            $iar = $c.BeginConnect('127.0.0.1', $P, $null, $null)
+            if ($iar.AsyncWaitHandle.WaitOne(300)) { $c.EndConnect($iar); $c.Close(); return $true }
+            $c.Close()
+        }
+        catch { }
+        return $false
+    }
+
+    function Test-ProxyWorks([int]$P) {
+        if (-not (Test-PortOpen $P)) { return $false }
+        try {
+            $r = Invoke-WebRequest -UseBasicParsing -Method Head `
+                -Uri "$($script:RepoRaw)/version.txt" `
+                -Proxy "http://127.0.0.1:$P" -TimeoutSec 15 -ErrorAction Stop
+            return ($r.StatusCode -ge 200 -and $r.StatusCode -lt 400)
+        }
+        catch { return $false }
+    }
+
+    # 环境变量优先
+    $envPort = $env:PROXY_PORT
+    if ($envPort -and $envPort -match '^\d+$' -and (Test-ProxyWorks ([int]$envPort))) {
+        $script:ProxyUrl = "http://127.0.0.1:$envPort"
+        return $script:ProxyUrl
+    }
+
+    # Clash Verge 配置
+    $pairs = @(
+        @{ p = (Join-Path $env:APPDATA 'io.github.clash-verge-rev.clash-verge-rev\verge.yaml'); r = '(?m)^\s*verge_mixed_port:\s*(\d+)' },
+        @{ p = (Join-Path $env:APPDATA 'clash-verge\verge.yaml');                               r = '(?m)^\s*verge_mixed_port:\s*(\d+)' },
+        @{ p = (Join-Path $env:APPDATA 'io.github.clash-verge-rev.clash-verge-rev\clash-verge.yaml'); r = '(?m)^\s*mixed-port:\s*(\d+)' },
+        @{ p = (Join-Path $env:APPDATA 'clash-verge\clash-verge.yaml');                         r = '(?m)^\s*mixed-port:\s*(\d+)' }
+    )
+    foreach ($e in $pairs) {
+        if (Test-Path -LiteralPath $e.p) {
+            $raw = Get-Content -LiteralPath $e.p -Raw -ErrorAction SilentlyContinue
+            if ($raw -match $e.r) {
+                $cand = [int]$Matches[1]
+                if (Test-ProxyWorks $cand) {
+                    $script:ProxyUrl = "http://127.0.0.1:$cand"
+                    return $script:ProxyUrl
+                }
+            }
+        }
+    }
+
+    # 扫描常见端口
+    foreach ($cand in @(7897, 7890, 10809, 10808, 1080, 2080, 8889, 8080)) {
+        if (Test-ProxyWorks $cand) {
+            $script:ProxyUrl = "http://127.0.0.1:$cand"
+            return $script:ProxyUrl
+        }
+    }
+
+    $script:ProxyUrl = ''
+    return ''
+}
+
+function Invoke-HttpDownload {
+    # 统一下载：优先本地代理，其次直连，再镜像。不落地端口配置。
+    param([string]$Relative, [string]$OutFile, [int]$TimeoutSec = 60)
+    $proxy = Get-LocalProxy
+    $targets = @()
+    if ($proxy) { $targets += @{ u = "$($script:RepoRaw)/$Relative"; p = $proxy } }
+    $targets += @{ u = "$($script:RepoRaw)/$Relative"; p = '' }
+    $targets += @{ u = "https://ghfast.top/$($script:RepoRaw)/$Relative"; p = '' }
+
+    foreach ($t in $targets) {
+        try {
+            $args = @{ UseBasicParsing = $true; Uri = $t.u; OutFile = $OutFile; TimeoutSec = $TimeoutSec }
+            if ($t.p) { $args.Proxy = $t.p }
+            Invoke-WebRequest @args
+            return $true
+        }
+        catch { }
+    }
+    return $false
+}
+
 function Get-RemoteVersionMap {
     param([switch]$Force)
     if (-not $Force -and (Test-Path -LiteralPath $script:VersionCache)) {
@@ -1553,9 +1652,12 @@ function Get-RemoteVersionMap {
         catch { }
     }
     $urls = @("$($script:RepoRaw)/version.txt", "https://ghfast.top/$($script:RepoRaw)/version.txt")
+    $proxy = Get-LocalProxy
     foreach ($u in $urls) {
         try {
-            $text = (Invoke-WebRequest -UseBasicParsing -Uri $u -TimeoutSec 8).Content
+            $args = @{ UseBasicParsing = $true; Uri = $u; TimeoutSec = 8 }
+            if ($proxy -and $u -like "$($script:RepoRaw)/*") { $args.Proxy = $proxy }
+            $text = (Invoke-WebRequest @args).Content
             if ($text) {
                 try {
                     if (-not (Test-Path -LiteralPath $WorkDir)) { New-Item -ItemType Directory -Path $WorkDir -Force | Out-Null }
@@ -1600,42 +1702,32 @@ function Invoke-AutoUpdate {
 
     if ($remotePs1 -and $remotePs1 -ne $script:Version -and $PSCommandPath) {
         $tmp = Join-Path $WorkDir 'codex-switcher.update.ps1'
-        $urls = @("$($script:RepoRaw)/codex-switcher.ps1", "https://ghfast.top/$($script:RepoRaw)/codex-switcher.ps1")
-        foreach ($u in $urls) {
-            try {
-                Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $tmp -TimeoutSec 60
-                if ((Get-Item -LiteralPath $tmp).Length -gt 200) {
-                    Copy-Item -LiteralPath $tmp -Destination $PSCommandPath -Force
-                    Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
-                    Write-Ok "核心脚本已更新到 $remotePs1（本次仍用旧版，下次运行生效）。"
-                    $script:Version = $remotePs1
-                    $updated = $true
-                    break
-                }
+        if (Invoke-HttpDownload -Relative 'codex-switcher.ps1' -OutFile $tmp -TimeoutSec 60) {
+            if ((Get-Item -LiteralPath $tmp).Length -gt 200) {
+                Copy-Item -LiteralPath $tmp -Destination $PSCommandPath -Force
+                Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+                Write-Ok "核心脚本已更新到 $remotePs1（本次仍用旧版，下次运行生效）。"
+                $script:Version = $remotePs1
+                $updated = $true
             }
-            catch { }
         }
     }
 
     $localBat = Get-LocalBatVersion
     if ($remoteBat -and $remoteBat -ne $localBat) {
         $tmp = Join-Path $WorkDir 'codex.bat.update'
-        $urls = @("$($script:RepoRaw)/codex.bat", "https://ghfast.top/$($script:RepoRaw)/codex.bat")
-        foreach ($u in $urls) {
-            try {
-                Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $tmp -TimeoutSec 60
-                $txt = Get-Content -LiteralPath $tmp -Raw -ErrorAction SilentlyContinue
-                if ($txt -and $txt -match 'LOCAL_BAT_VERSION' -and $txt -match 'codex-switcher') {
-                    Copy-Item -LiteralPath $tmp -Destination (Join-Path $WorkDir 'codex.bat') -Force
-                    Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
-                    try { Write-TextAtomic -Path $script:BatVersionFile -Content "$remoteBat`r`n" } catch { }
-                    Write-Ok "启动器已更新到 $remoteBat。"
-                    $updated = $true
-                    break
-                }
+        if (Invoke-HttpDownload -Relative 'codex.bat' -OutFile $tmp -TimeoutSec 60) {
+            $txt = Get-Content -LiteralPath $tmp -Raw -ErrorAction SilentlyContinue
+            if ($txt -and $txt -match 'LOCAL_BAT_VERSION' -and $txt -match 'codex-switcher') {
+                Copy-Item -LiteralPath $tmp -Destination (Join-Path $WorkDir 'codex.bat') -Force
+                Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
+                try { Write-TextAtomic -Path $script:BatVersionFile -Content "$remoteBat`r`n" } catch { }
+                Write-Ok "启动器已更新到 $remoteBat。"
+                $updated = $true
+            }
+            else {
                 Remove-Item -LiteralPath $tmp -Force -ErrorAction SilentlyContinue
             }
-            catch { }
         }
     }
 

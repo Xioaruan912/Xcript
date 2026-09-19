@@ -17,7 +17,7 @@ REM Config
 REM ==========================================
 
 REM Launcher version (keep in sync with version.txt bat=)
-set "LOCAL_BAT_VERSION=1.5.0"
+set "LOCAL_BAT_VERSION=1.5.1"
 
 set "PS1_URL=https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/codex-switcher.ps1"
 set "MIRROR_PREFIX=https://ghfast.top/"
@@ -32,6 +32,8 @@ set "CACHE_HOURS=24"
 set "NEED_DOWNLOAD=0"
 set "CACHE_VALID=0"
 set "FORCE=0"
+set "NO_PROXY=0"
+set "PROXY_PORT="
 
 REM ==========================================
 REM Parse arguments
@@ -39,9 +41,12 @@ REM ==========================================
 
 :PARSE_ARGS
 if "%~1"=="" goto ARGS_DONE
-if /i "%~1"=="-force"  set "FORCE=1"
-if /i "%~1"=="--force" set "FORCE=1"
-if /i "%~1"=="/force"  set "FORCE=1"
+if /i "%~1"=="-force"   set "FORCE=1"
+if /i "%~1"=="--force"  set "FORCE=1"
+if /i "%~1"=="/force"   set "FORCE=1"
+if /i "%~1"=="-noproxy" set "NO_PROXY=1"
+if /i "%~1"=="--no-proxy" set "NO_PROXY=1"
+if /i "%~1"=="/noproxy" set "NO_PROXY=1"
 if /i "%~1"=="-h"      goto USAGE
 if /i "%~1"=="--help"  goto USAGE
 if /i "%~1"=="/?"      goto USAGE
@@ -139,11 +144,74 @@ echo.
 goto CACHE_DONE
 
 :CACHE_DONE
-if "%NEED_DOWNLOAD%"=="1" goto DOWNLOAD
+if "%NEED_DOWNLOAD%"=="1" goto DETECT_PROXY
 goto RUN
 
 REM ==========================================
-REM Download (GitHub, then mirror fallback)
+REM Detect local proxy (read-only, writes nothing)
+REM
+REM Order: env PROXY_PORT > Clash Verge config > common ports
+REM Uses GitHub reachability to validate a candidate, then asks
+REM the user if nothing was found (only when a download is needed).
+REM ==========================================
+
+:DETECT_PROXY
+if "%NO_PROXY%"=="1" (
+    echo [proxy] -noproxy specified, skipping detection.
+    echo.
+    goto DOWNLOAD
+)
+
+echo [proxy] detecting local proxy ...
+set "PROXY_RESULT=%TEMP%\codex-switcher-proxy.result"
+if exist "%PROXY_RESULT%" del /f /q "%PROXY_RESULT%" >nul 2>&1
+set "CODE_SWITCHER_PROXY_PORT=%PROXY_PORT%"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='SilentlyContinue'; $ProgressPreference='SilentlyContinue'; function Test-Tcp([int]$p){ if($p -lt 1 -or $p -gt 65535){return $false}; try{ $c=New-Object Net.Sockets.TcpClient; $iar=$c.BeginConnect('127.0.0.1',$p,$null,$null); if($iar.AsyncWaitHandle.WaitOne(300)){ $c.EndConnect($iar); $c.Close(); return $true }; $c.Close() }catch{}; return $false }; function Test-Gh([int]$p){ if(-not (Test-Tcp $p)){return $false}; try{ $r=Invoke-WebRequest -UseBasicParsing -Method Head -Uri 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt' -Proxy ('http://127.0.0.1:'+$p) -TimeoutSec 15; return ($r.StatusCode -ge 200 -and $r.StatusCode -lt 400) }catch{ return $false } }; $found=0; if($env:CODE_SWITCHER_PROXY_PORT -and (Test-Gh ([int]$env:CODE_SWITCHER_PROXY_PORT))){ Write-Host ('[proxy] using 127.0.0.1:'+$env:CODE_SWITCHER_PROXY_PORT+' (from PROXY_PORT)'); $found=[int]$env:CODE_SWITCHER_PROXY_PORT } ; if(-not $found){ $pairs=@(@{p=(Join-Path $env:APPDATA 'io.github.clash-verge-rev.clash-verge-rev\verge.yaml');r='(?m)^\s*verge_mixed_port:\s*(\d+)'},@{p=(Join-Path $env:APPDATA 'clash-verge\verge.yaml');r='(?m)^\s*verge_mixed_port:\s*(\d+)'},@{p=(Join-Path $env:APPDATA 'io.github.clash-verge-rev.clash-verge-rev\clash-verge.yaml');r='(?m)^\s*mixed-port:\s*(\d+)'},@{p=(Join-Path $env:APPDATA 'clash-verge\clash-verge.yaml');r='(?m)^\s*mixed-port:\s*(\d+)'}); foreach($e in $pairs){ if(Test-Path -LiteralPath $e.p){ $raw=Get-Content -LiteralPath $e.p -Raw; if($raw -match $e.r){ $cand=[int]$Matches[1]; if(Test-Gh $cand){ Write-Host ('[proxy] using 127.0.0.1:'+$cand+' (from Clash config)'); $found=$cand; break } else { Write-Host ('[proxy] Clash config port '+$cand+' not usable for GitHub') } } } } } ; if(-not $found){ Write-Host '[proxy] scanning common ports:'; foreach($cand in @(7897,7890,10809,10808,1080,2080,8889,8080)){ if(Test-Gh $cand){ Write-Host ('[proxy]   127.0.0.1:'+$cand+' ok'); Write-Host ('[proxy] using 127.0.0.1:'+$cand+' (from scan)'); $found=$cand; break } elseif(Test-Tcp $cand){ Write-Host ('[proxy]   127.0.0.1:'+$cand+' open but cannot reach GitHub') } else { Write-Host ('[proxy]   127.0.0.1:'+$cand+' not listening') } } } ; if($found){ Set-Content -LiteralPath $env:PROXY_RESULT -Value $found -Encoding ASCII } else { Set-Content -LiteralPath $env:PROXY_RESULT -Value '' -Encoding ASCII }"
+
+if not exist "%PROXY_RESULT%" (
+    set "PROXY_PORT="
+    goto ASK_PROXY
+)
+set /p PROXY_PORT=<"%PROXY_RESULT%"
+if exist "%PROXY_RESULT%" del /f /q "%PROXY_RESULT%" >nul 2>&1
+
+if "%PROXY_PORT%"=="" (
+    goto ASK_PROXY
+)
+
+echo.
+goto DOWNLOAD
+
+REM ==========================================
+REM Nothing detected: ask the user once (only during a download)
+REM ==========================================
+
+:ASK_PROXY
+echo.
+echo [proxy] no local proxy detected automatically.
+echo [proxy] Enter your proxy port (e.g. 7897 / 7890 / 10809),
+echo [proxy] or press Enter to download directly / via mirror.
+set "USER_PORT="
+set /p "USER_PORT=Proxy port: "
+if "%USER_PORT%"=="" (
+    echo [proxy] no port entered, will download directly.
+    echo.
+    goto DOWNLOAD
+)
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='SilentlyContinue'; $p=[int]$env:USER_PORT; try{ $r=Invoke-WebRequest -UseBasicParsing -Method Head -Uri 'https://raw.githubusercontent.com/Xioaruan912/Xcript/main/windows/codex-switcher/version.txt' -Proxy ('http://127.0.0.1:'+$p) -TimeoutSec 15; if($r.StatusCode -ge 200 -and $r.StatusCode -lt 400){ exit 0 } else { exit 3 } }catch{ exit 3 }"
+if errorlevel 1 (
+    echo [proxy] port %USER_PORT% cannot reach GitHub through the proxy.
+    echo [proxy] will download directly.
+    echo.
+    goto DOWNLOAD
+)
+set "PROXY_PORT=%USER_PORT%"
+echo [proxy] using 127.0.0.1:%PROXY_PORT% (from user input)
+echo.
+goto DOWNLOAD
+
+REM ==========================================
+REM Download (proxy if available, then GitHub direct, then mirror)
 REM ==========================================
 
 :DOWNLOAD
@@ -152,20 +220,29 @@ if exist "%PS1_TEMP%" del /f /q "%PS1_TEMP%" >nul 2>&1
 echo Fetching latest version, please wait...
 echo.
 
-call :DOWNLOAD_ONE "%PS1_URL%"
+if not "%PROXY_PORT%"=="" (
+    echo [proxy] trying download via 127.0.0.1:%PROXY_PORT% ...
+    call :DOWNLOAD_ONE "%PS1_URL%" "%PROXY_PORT%"
+    if not errorlevel 1 goto DOWNLOAD_OK
+    echo [proxy] proxy download failed, falling back.
+    echo.
+)
+
+call :DOWNLOAD_ONE "%PS1_URL%" ""
 if not errorlevel 1 goto DOWNLOAD_OK
 
 echo [info] GitHub direct failed, trying mirror...
 echo.
-call :DOWNLOAD_ONE "%MIRROR_PREFIX%%PS1_URL%"
+call :DOWNLOAD_ONE "%MIRROR_PREFIX%%PS1_URL%" ""
 if not errorlevel 1 goto DOWNLOAD_OK
 
 goto DOWNLOAD_FAILED
 
 :DOWNLOAD_ONE
-REM arg %1 = full URL
+REM arg %1 = full URL, arg %2 = proxy port (empty = direct)
 set "PS1_URL_ONE=%~1"
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -UseBasicParsing -Uri $env:PS1_URL_ONE -OutFile $env:PS1_TEMP; if ((Get-Item -LiteralPath $env:PS1_TEMP).Length -lt 200) { throw 'Downloaded script is too small' }; $c=Get-Content -LiteralPath $env:PS1_TEMP -Raw; if ($c -notmatch 'Invoke-Main') { throw 'Downloaded file is not the Codex Switcher core script' }" 1>nul 2>nul
+set "PS1_PROXY_ONE=%~2"
+powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "$ErrorActionPreference='Stop'; $ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; $args=@{UseBasicParsing=$true;Uri=$env:PS1_URL_ONE;OutFile=$env:PS1_TEMP}; if($env:PS1_PROXY_ONE){ $args.Proxy='http://127.0.0.1:'+$env:PS1_PROXY_ONE }; Invoke-WebRequest @args; if ((Get-Item -LiteralPath $env:PS1_TEMP).Length -lt 200) { throw 'Downloaded script is too small' }; $c=Get-Content -LiteralPath $env:PS1_TEMP -Raw; if ($c -notmatch 'Invoke-Main') { throw 'Downloaded file is not the Codex Switcher core script' }" 1>nul 2>nul
 exit /b %ERRORLEVEL%
 
 :DOWNLOAD_OK
@@ -287,9 +364,10 @@ REM ==========================================
 
 :USAGE
 echo.
-echo Usage: codex.bat [-force]
+echo Usage: codex.bat [-force] [-noproxy]
 echo.
 echo   -force    Ignore cache TTL and fetch the latest version
+echo   -noproxy  Skip local proxy detection, download directly
 echo   -h        Show this help
 echo.
 endlocal

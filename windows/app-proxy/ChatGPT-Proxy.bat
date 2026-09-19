@@ -90,9 +90,8 @@ if (-not $Aumid) {
     if ($start) { $Aumid = $start.AppID } else { $Aumid = "$($pkg.PackageFamilyName)!App" }
 }
 
-# ---- 4. 代理端口：命令行 > 环境变量 > 本地保存 > 自动探测 > 询问用户
-$ConfigDir  = Join-Path $env:LOCALAPPDATA 'ChatGPTProxy'
-$ConfigFile = Join-Path $ConfigDir 'config.json'
+# ---- 4. 代理端口：命令行 > 环境变量 > Clash 配置 > 扫描常见端口 > 询问用户
+#      全程只读，不写入任何配置文件。
 
 function Test-PortOpen([int]$p) {
     if ($p -lt 1 -or $p -gt 65535) { return $false }
@@ -112,15 +111,11 @@ function Test-ProxyPort([int]$p) {
     } catch { return $false }
 }
 
-# 4a. 读取上次保存的端口
-if (-not $Port -and (Test-Path -LiteralPath $ConfigFile)) {
-    try {
-        $saved = (Get-Content -LiteralPath $ConfigFile -Raw | ConvertFrom-Json).port
-        if ($saved -and (Test-PortOpen ([int]$saved))) {
-            $Port = [int]$saved
-            Show "使用上次保存的代理端口: $Port"
-        }
-    } catch { }
+Show "代理端口探测："
+
+# 4a. 命令行 / 环境变量（用户显式指定）
+if ($Port) {
+    Show "  来源：命令行 port=$Port"
 }
 
 # 4b. 读取 Clash Verge 配置
@@ -136,20 +131,38 @@ if (-not $Port) {
             $raw = Get-Content -LiteralPath $e.p -Raw
             if ($raw -match $e.r) {
                 $cand = [int]$Matches[1]
-                if (Test-PortOpen $cand) { $Port = $cand; Show "从 Clash 配置读取到代理端口: $Port"; break }
+                if (Test-PortOpen $cand) {
+                    $Port = $cand
+                    Show "  Clash 配置 $($e.p)：端口 $cand（已监听）"
+                    break
+                } else {
+                    Show "  Clash 配置 $($e.p)：端口 $cand（未监听，跳过）"
+                }
             }
+        }
+    }
+    if (-not $Port) { Show "  未从 Clash 配置读到可用端口。" }
+}
+
+# 4c. 扫描本机常见代理端口，挑一个真正能代理的（打印每个尝试结果）
+if (-not $Port) {
+    Show "  正在扫描本机常见代理端口："
+    foreach ($cand in @(7897, 7890, 10809, 10808, 1080, 2080, 8889, 8080)) {
+        if (Test-PortOpen $cand) {
+            if (Test-ProxyPort $cand) {
+                $Port = $cand
+                Show "    127.0.0.1:$cand 可用（已命中）"
+                break
+            } else {
+                Show "    127.0.0.1:$cand 端口通，但无法代理访问网络"
+            }
+        } else {
+            Show "    127.0.0.1:$cand 未监听"
         }
     }
 }
 
-# 4c. 扫描本机常见代理端口，挑一个真正能代理的
-if (-not $Port) {
-    foreach ($cand in @(7897, 7890, 10809, 10808, 1080, 2080, 8889, 8080)) {
-        if (Test-ProxyPort $cand) { $Port = $cand; Show "自动探测到可用代理端口: $Port"; break }
-    }
-}
-
-# 4d. 仍然没有：询问用户（首次运行时）
+# 4d. 仍然没有：询问用户
 if (-not $Port) {
     Write-Host ''
     Write-Host '[ChatGPT-Proxy] 未能自动检测到本地代理端口。' -ForegroundColor Yellow
@@ -161,7 +174,7 @@ if (-not $Port) {
         $ans = Read-Host '代理端口'
         if ($ans -match '^\d+$') {
             $cand = [int]$ans
-            if (Test-ProxyPort $cand) { $Port = $cand; break }
+            if (Test-ProxyPort $cand) { $Port = $cand; Show "  使用手动输入端口：$cand"; break }
             Write-Host "[ChatGPT-Proxy] 端口 $cand 未能通过代理访问网络，请确认代理已开启。" -ForegroundColor Yellow
         } else {
             Write-Host '[ChatGPT-Proxy] 请输入纯数字端口。' -ForegroundColor Yellow
@@ -169,12 +182,6 @@ if (-not $Port) {
     }
     if (-not $Port) { throw '未获得可用的代理端口，已退出。' }
 }
-
-# 4e. 记住端口，下次直接用
-try {
-    if (-not (Test-Path -LiteralPath $ConfigDir)) { New-Item -ItemType Directory -Force -Path $ConfigDir | Out-Null }
-    @{ port = $Port } | ConvertTo-Json -Compress | Set-Content -LiteralPath $ConfigFile -Encoding UTF8
-} catch { }
 
 $ProxyServer = "http://127.0.0.1:$Port"
 
@@ -192,14 +199,6 @@ if ($MakeShortcut) {
                 Where-Object { $_.Name -notmatch 'chrome_|elevation|notification|tracing|wer|pwa' } |
                 Sort-Object Length -Descending | Select-Object -First 1).FullName
     }
-    $icoDir = Join-Path $env:LOCALAPPDATA 'ChatGPTProxy'
-    New-Item -ItemType Directory -Force -Path $icoDir | Out-Null
-    $ico = Join-Path $icoDir 'chatgpt.ico'
-    if ($exe -and (Test-Path -LiteralPath $exe)) {
-        Add-Type -AssemblyName System.Drawing
-        $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($exe)
-        $fs = [System.IO.File]::Create($ico); $icon.Save($fs); $fs.Close(); $icon.Dispose()
-    }
     $self = $env:SELF.Replace("'", "''")
     $cmd = '$t=[IO.File]::ReadAllText(''' + $self + ''',[Text.Encoding]::UTF8);$m=''' + $Marker + ''';$i=$t.IndexOf($m);& ([ScriptBlock]::Create($t.Substring($i+$m.Length)))'
     $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'ChatGPT (代理).lnk'
@@ -208,7 +207,8 @@ if ($MakeShortcut) {
     $s.TargetPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
     $s.Arguments = '-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "' + $cmd + '"'
     $s.WorkingDirectory = Split-Path -Parent $env:SELF
-    if (Test-Path -LiteralPath $ico) { $s.IconLocation = "$ico,0" }
+    # 图标直接用应用 exe，不额外落地 .ico 文件
+    if ($exe -and (Test-Path -LiteralPath $exe)) { $s.IconLocation = "$exe,0" }
     $s.Description = 'ChatGPT 按进程代理启动（保留 MSIX 包身份）'
     $s.Save()
     [System.Runtime.InteropServices.Marshal]::ReleaseComObject($ws) | Out-Null

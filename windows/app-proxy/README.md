@@ -33,6 +33,8 @@ ChatGPT-Proxy.bat help
 
 生成快捷方式后，**以后只从该快捷方式启动**，并建议关闭应用自身的「开机自启 / 托盘常驻」，否则直接点应用图标启动的实例不会走代理。
 
+快捷方式图标直接取应用自己的 exe，不额外生成 `.ico` 文件。
+
 ## 自定义
 
 编辑文件顶部的四行：
@@ -62,13 +64,15 @@ set "PROXY_BYPASS=localhost;127.0.0.1"
 
 ### 端口探测顺序
 
-1. 命令行 `port=NNNN` / 环境变量 `PROXY_PORT`。
-2. 上次保存的端口（`%LOCALAPPDATA%\ChatGPTProxy\config.json`）。
+1. 命令行 `port=NNNN`。
+2. 环境变量 `PROXY_PORT`。
 3. Clash Verge 配置：`verge.yaml: verge_mixed_port` -> `clash-verge.yaml: mixed-port`。
 4. 扫描本机常见端口：7897 / 7890 / 10809 / 10808 / 1080 / 2080 / 8889 / 8080，取第一个能真正代理的。
-5. 都没有就**询问用户**输入端口（最多 3 次，会验证能否通过它访问网络），成功后记住到 `config.json`，下次直接用。
+5. 都没有就**询问用户**输入端口（最多 3 次，会验证能否通过它访问网络）。
 
-所以代理端口不是 7897 的用户，首次运行输入一次即可，之后无需再输。
+每一步的结果都会打印出来，比如「Clash 配置 ...：端口 7897（已监听）」「127.0.0.1:10809 未监听」「127.0.0.1:7897 可用（已命中）」，你能看到端口是从哪来的。
+
+**全程只读，不写入任何配置文件**：不会在 `%LOCALAPPDATA%` 或其它地方留下端口记录，每次运行都重新探测。所以代理端口不是 7897 的用户，首次输入一次即可（脚本不记忆），若配置了 Clash Verge 则连输入都不需要。
 
 ChatGPT Desktop 当前实测：AUMID `OpenAI.Codex_2p2nqsd0c76g0!App`，Chromium 框架，Full Trust（`runFullTrust` + `Windows.FullTrustApplication`，非 AppContainer，无需 loopback 豁免）。
 
